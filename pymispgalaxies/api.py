@@ -24,6 +24,16 @@ class EncodeGalaxies(JSONEncoder):
             return JSONEncoder.default(self, obj)
 
 
+class PyMISPGalaxiesError(Exception):
+    def __init__(self, message):
+        super(PyMISPGalaxiesError, self).__init__(message)
+        self.message = message
+
+
+class UnableToRevertMachinetag(PyMISPGalaxiesError):
+    pass
+
+
 class Galaxy():
 
     def __init__(self, galaxy):
@@ -141,6 +151,8 @@ class ClusterValueMeta():
 class ClusterValue():
 
     def __init__(self, v):
+        if not v['value']:
+            raise PyMISPGalaxiesError("Invalid cluster (no value): {}".format(v))
         self.value = v['value']
         self.description = v.get('description')
         self.meta = self.__init_meta(v.get('meta'))
@@ -159,8 +171,12 @@ class ClusterValue():
         return to_return
 
     def __str__(self):
-        # TODO: improve that
-        return '{}\n{}'.format(self.value, self.description)
+        to_print = '{}\n{}'.format(self.value, self.description)
+        if self.meta:
+            to_print += '\n'
+            for k, v in self.meta._json().items():
+                to_print += '- {}:\t{}'.format(k, v)
+        return to_print
 
 
 class Cluster():
@@ -226,7 +242,7 @@ class Clusters(collections.Mapping):
         for v in cluster.values:
             if v.value == cluster_value:
                 return cluster, v
-        return None
+        raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
     def __getitem__(self, name):
         return self.clusters[name]
