@@ -1,0 +1,3 @@
+[submodule "pymispgalaxies/data/misp-galaxy"]
+	path = pymispgalaxies/data/misp-galaxy
+	url = https://github.com/MISP/misp-galaxy.git
