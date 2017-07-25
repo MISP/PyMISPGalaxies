@@ -7,6 +7,7 @@ import os
 import sys
 import collections
 from glob import glob
+import re
 
 try:
     import jsonschema
@@ -157,6 +158,10 @@ class ClusterValue():
             to_return['meta'] = self.meta._json()
         return to_return
 
+    def __str__(self):
+        # TODO: improve that
+        return '{}\n{}'.format(self.value, self.description)
+
 
 class Cluster():
 
@@ -200,7 +205,7 @@ class Clusters(collections.Mapping):
         for cluster_file in glob(os.path.join(self.root_dir_clusters, '*.json')):
             with open(cluster_file, 'r') as f:
                 cluster = json.load(f)
-            self.clusters[cluster['name']] = Cluster(cluster)
+            self.clusters[cluster['type']] = Cluster(cluster)
 
     def validate_with_schema(self):
         if not HAS_JSONSCHEMA:
@@ -214,6 +219,14 @@ class Clusters(collections.Mapping):
 
     def all_machinetags(self):
         return [cluster.machinetags() for cluster in self.clusters.values()]
+
+    def revert_machinetag(self, machinetag):
+        _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
+        cluster = self.clusters[cluster_type]
+        for v in cluster.values:
+            if v.value == cluster_value:
+                return cluster, v
+        return None
 
     def __getitem__(self, name):
         return self.clusters[name]
