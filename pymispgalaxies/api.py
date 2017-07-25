@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+from json import JSONEncoder
 import os
 import sys
 import collections
@@ -12,6 +13,14 @@ try:
     HAS_JSONSCHEMA = True
 except ImportError:
     HAS_JSONSCHEMA = False
+
+
+class EncodeGalaxies(JSONEncoder):
+    def default(self, obj):
+        try:
+            return obj._json()
+        except AttributeError:
+            return JSONEncoder.default(self, obj)
 
 
 class Galaxy():
