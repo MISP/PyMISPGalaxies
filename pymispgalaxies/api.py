@@ -173,6 +173,15 @@ class Cluster():
         for value in self.cluster['values']:
             self.values.append(ClusterValue(value))
 
+    def machinetags(self):
+        to_return = []
+        for v in self.values:
+            to_return.append('misp-galaxy:{}="{}"'.format(self.type, v.value))
+        return to_return
+
+    def __str__(self):
+        return '\n'.join(self.machinetags())
+
     def _json(self):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
@@ -203,6 +212,9 @@ class Clusters(collections.Mapping):
         for c in self.clusters.values():
             jsonschema.validate(c.cluster, loaded_schema)
 
+    def all_machinetags(self):
+        return [cluster.machinetags() for cluster in self.clusters.values()]
+
     def __getitem__(self, name):
         return self.clusters[name]
 
@@ -215,5 +227,5 @@ class Clusters(collections.Mapping):
     def __str__(self):
         to_print = ''
         for cluster in self.clusters.values():
-            to_print += '{}\n\n'.format(str(cluster))
+            to_print += '{}\n\n'.format(cluster)
         return to_print

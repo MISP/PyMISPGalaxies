@@ -47,3 +47,9 @@ class TestPyMISPGalaxies(unittest.TestCase):
             for cv in c.values:
                 if cv.meta:
                     self.assertIsNot(cv.meta.additional_properties, {})
+
+    def test_machinetags(self):
+        self.clusters.all_machinetags()
+
+    def test_print(self):
+        print(self.clusters)
