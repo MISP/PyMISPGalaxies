@@ -56,3 +56,6 @@ class TestPyMISPGalaxies(unittest.TestCase):
 
     def test_search(self):
         self.assertIsNot(len(self.clusters.search('apt')), 0)
+
+    def test_revert_machinetag(self):
+        self.assertEqual(len(self.clusters.revert_machinetag('misp-galaxy:tool="Babar"')), 2)
