@@ -44,7 +44,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
     def test_meta_additional_properties(self):
         # All the properties in the meta key of the bundled-in clusters should be known
         for c in self.clusters.values():
-            for cv in c.values.values():
+            for cv in c.values():
                 if cv.meta:
                     self.assertIsNot(cv.meta.additional_properties, {})
 

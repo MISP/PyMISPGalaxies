@@ -179,23 +179,23 @@ class Cluster(collections.Mapping):
         self.description = self.cluster['description']
         self.uuid = self.cluster['uuid']
         self.version = self.cluster['version']
-        self.values = {}
+        self.cluster_values = {}
         for value in self.cluster['values']:
             new_cluster_value = ClusterValue(value)
-            if self.values.get(new_cluster_value.value):
+            if self.cluster_values.get(new_cluster_value.value):
                 raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
-            self.values[new_cluster_value.value] = new_cluster_value
+            self.cluster_values[new_cluster_value.value] = new_cluster_value
 
     def search(self, query):
         matching = []
-        for v in self.values.values():
+        for v in self.values():
             if [s for s in v.searchable if query.lower() in s.lower()]:
                 matching.append(v)
         return matching
 
     def machinetags(self):
         to_return = []
-        for v in self.values.values():
+        for v in self.values():
             to_return.append('misp-galaxy:{}="{}"'.format(self.type, v.value))
         return to_return
 
@@ -203,19 +203,19 @@ class Cluster(collections.Mapping):
         return '\n'.join(self.machinetags())
 
     def __getitem__(self, name):
-        return self.values[name]
+        return self.cluster_values[name]
 
     def __len__(self):
-        return len(self.values)
+        return len(self.cluster_values)
 
     def __iter__(self):
-        return iter(self.values)
+        return iter(self.cluster_values)
 
     def _json(self):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'values': []}
-        to_return['values'] = [v._json() for v in self.values.values()]
+        to_return['values'] = [v._json() for v in self.cluster_values.values()]
         return to_return
 
 
