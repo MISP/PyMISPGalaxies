@@ -59,3 +59,9 @@ class TestPyMISPGalaxies(unittest.TestCase):
 
     def test_revert_machinetag(self):
         self.assertEqual(len(self.clusters.revert_machinetag('misp-galaxy:tool="Babar"')), 2)
+
+    def test_len(self):
+        self.assertIsNot(len(self.clusters), 0)
+        self.assertIsNot(len(self.galaxies), 0)
+        for c in self.clusters.values():
+            self.assertIsNot(len(c), 0)

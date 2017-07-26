@@ -182,7 +182,7 @@ class Cluster(collections.Mapping):
         self.cluster_values = {}
         for value in self.cluster['values']:
             new_cluster_value = ClusterValue(value)
-            if self.cluster_values.get(new_cluster_value.value):
+            if self.get(new_cluster_value.value):
                 raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
             self.cluster_values[new_cluster_value.value] = new_cluster_value
 
@@ -215,7 +215,7 @@ class Cluster(collections.Mapping):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'values': []}
-        to_return['values'] = [v._json() for v in self.cluster_values.values()]
+        to_return['values'] = [v._json() for v in self.values()]
         return to_return
 
 
@@ -237,16 +237,16 @@ class Clusters(collections.Mapping):
                               'data', 'misp-galaxy', 'schema_clusters.json')
         with open(schema, 'r') as f:
             loaded_schema = json.load(f)
-        for c in self.clusters.values():
+        for c in self.values():
             jsonschema.validate(c.cluster, loaded_schema)
 
     def all_machinetags(self):
-        return [cluster.machinetags() for cluster in self.clusters.values()]
+        return [cluster.machinetags() for cluster in self.values()]
 
     def revert_machinetag(self, machinetag):
         _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
         try:
-            cluster = self.clusters[cluster_type]
+            cluster = self.get(cluster_type)
             value = cluster[cluster_value]
             return cluster, value
         except:
@@ -254,7 +254,7 @@ class Clusters(collections.Mapping):
 
     def search(self, query):
         to_return = []
-        for cluster in self.clusters.values():
+        for cluster in self.values():
             values = cluster.search(query)
             if not values:
                 continue
@@ -272,6 +272,6 @@ class Clusters(collections.Mapping):
 
     def __str__(self):
         to_print = ''
-        for cluster in self.clusters.values():
+        for cluster in self.values():
             to_print += '{}\n\n'.format(cluster)
         return to_print
