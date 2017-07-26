@@ -33,7 +33,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
             clusters_from_files[cluster['name']] = cluster
         for name, c in self.clusters.items():
             out = c._json()
-            self.assertDictEqual(out, clusters_from_files[c.name])
+            self.assertCountEqual(out, clusters_from_files[c.name])
 
     def test_validate_schema_clusters(self):
         self.clusters.validate_with_schema()
@@ -44,7 +44,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
     def test_meta_additional_properties(self):
         # All the properties in the meta key of the bundled-in clusters should be known
         for c in self.clusters.values():
-            for cv in c.values:
+            for cv in c.values.values():
                 if cv.meta:
                     self.assertIsNot(cv.meta.additional_properties, {})
 

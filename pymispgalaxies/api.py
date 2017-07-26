@@ -209,7 +209,7 @@ class Cluster(collections.Mapping):
 
     def machinetags(self):
         to_return = []
-        for v in self.values:
+        for v in self.values.values():
             to_return.append('misp-galaxy:{}="{}"'.format(self.type, v.value))
         return to_return
 
@@ -229,7 +229,7 @@ class Cluster(collections.Mapping):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'values': []}
-        for v in self.values:
+        for v in self.values.values():
             to_return['values'].append(v._json())
         return to_return
 
