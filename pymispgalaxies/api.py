@@ -156,6 +156,9 @@ class ClusterValue():
         self.value = v['value']
         self.description = v.get('description')
         self.meta = self.__init_meta(v.get('meta'))
+        self.searchable = [self.value]
+        if self.meta and self.meta.synonyms:
+            self.searchable += self.meta.synonyms
 
     def __init_meta(self, m):
         if not m:
@@ -175,11 +178,11 @@ class ClusterValue():
         if self.meta:
             to_print += '\n'
             for k, v in self.meta._json().items():
-                to_print += '- {}:\t{}'.format(k, v)
+                to_print += '- {}:\t{}\n'.format(k, v)
         return to_print
 
 
-class Cluster():
+class Cluster(collections.Mapping):
 
     def __init__(self, cluster):
         self.cluster = cluster
@@ -190,9 +193,19 @@ class Cluster():
         self.description = self.cluster['description']
         self.uuid = self.cluster['uuid']
         self.version = self.cluster['version']
-        self.values = []
+        self.values = {}
         for value in self.cluster['values']:
-            self.values.append(ClusterValue(value))
+            new_cluster_value = ClusterValue(value)
+            if self.values.get(new_cluster_value.value):
+                raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
+            self.values[new_cluster_value.value] = new_cluster_value
+
+    def search(self, query):
+        matching = []
+        for v in self.values:
+            if [s for s in v.searchable if query.lower() in s.lower()]:
+                matching.append(v)
+        return matching
 
     def machinetags(self):
         to_return = []
@@ -202,6 +215,15 @@ class Cluster():
 
     def __str__(self):
         return '\n'.join(self.machinetags())
+
+    def __getitem__(self, name):
+        return self.values[name]
+
+    def __len__(self):
+        return len(self.values)
+
+    def __iter__(self):
+        return iter(self.values)
 
     def _json(self):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
@@ -243,6 +265,15 @@ class Clusters(collections.Mapping):
             if v.value == cluster_value:
                 return cluster, v
         raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
+
+    def search(self, query):
+        to_return = []
+        for cluster in self.clusters.values():
+            values = cluster.search(query)
+            if not values:
+                continue
+            to_return.append((cluster, values))
+        return to_return
 
     def __getitem__(self, name):
         return self.clusters[name]
