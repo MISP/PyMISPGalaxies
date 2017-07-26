@@ -53,3 +53,6 @@ class TestPyMISPGalaxies(unittest.TestCase):
 
     def test_print(self):
         print(self.clusters)
+
+    def test_search(self):
+        self.assertIsNot(len(self.clusters.search('apt')), 0)

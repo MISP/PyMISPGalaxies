@@ -202,7 +202,7 @@ class Cluster(collections.Mapping):
 
     def search(self, query):
         matching = []
-        for v in self.values:
+        for v in self.values.values():
             if [s for s in v.searchable if query.lower() in s.lower()]:
                 matching.append(v)
         return matching
