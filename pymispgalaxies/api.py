@@ -79,12 +79,6 @@ class Galaxies(collections.Mapping):
     def __len__(self):
         return len(self.galaxies)
 
-    def __str__(self):
-        to_print = ''
-        for galaxy in self.galaxies.values():
-            to_print += '{}\n\n'.format(str(galaxy))
-        return to_print
-
 
 class ClusterValueMeta():
 
@@ -173,14 +167,6 @@ class ClusterValue():
             to_return['meta'] = self.meta._json()
         return to_return
 
-    def __str__(self):
-        to_print = '{}\n{}'.format(self.value, self.description)
-        if self.meta:
-            to_print += '\n'
-            for k, v in self.meta._json().items():
-                to_print += '- {}:\t{}\n'.format(k, v)
-        return to_print
-
 
 class Cluster(collections.Mapping):
 
@@ -229,8 +215,7 @@ class Cluster(collections.Mapping):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'values': []}
-        for v in self.values.values():
-            to_return['values'].append(v._json())
+        to_return['values'] = [v._json() for v in self.values.values()]
         return to_return
 
 
@@ -260,11 +245,12 @@ class Clusters(collections.Mapping):
 
     def revert_machinetag(self, machinetag):
         _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
-        cluster = self.clusters[cluster_type]
-        for v in cluster.values.values():
-            if v.value == cluster_value:
-                return cluster, v
-        raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
+        try:
+            cluster = self.clusters[cluster_type]
+            value = cluster[cluster_value]
+            return cluster, value
+        except:
+            raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
     def search(self, query):
         to_return = []
