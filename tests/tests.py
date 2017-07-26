@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pymispgalaxies import Galaxies, Clusters
+from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag
 from glob import glob
 import os
 import json
@@ -59,6 +59,8 @@ class TestPyMISPGalaxies(unittest.TestCase):
 
     def test_revert_machinetag(self):
         self.assertEqual(len(self.clusters.revert_machinetag('misp-galaxy:tool="Babar"')), 2)
+        with self.assertRaises(UnableToRevertMachinetag):
+            self.clusters.revert_machinetag('blah')
 
     def test_len(self):
         self.assertIsNot(len(self.clusters), 0)

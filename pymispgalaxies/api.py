@@ -244,8 +244,8 @@ class Clusters(collections.Mapping):
         return [cluster.machinetags() for cluster in self.values()]
 
     def revert_machinetag(self, machinetag):
-        _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
         try:
+            _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
             cluster = self.get(cluster_type)
             value = cluster[cluster_value]
             return cluster, value
