@@ -40,13 +40,14 @@ class Galaxy():
         self.galaxy = galaxy
         self.type = self.galaxy['type']
         self.name = self.galaxy['name']
+        self.icon = self.galaxy['icon']
         self.description = self.galaxy['description']
         self.version = self.galaxy['version']
         self.uuid = self.galaxy['uuid']
 
     def _json(self):
         return {'type': self.type, 'name': self.name, 'description': self.description,
-                'version': self.version, 'uuid': self.uuid}
+                'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
 
 
 class Galaxies(collections.Mapping):
