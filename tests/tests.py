@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag, EncodeGalaxies
+from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag, EncodeGalaxies, EncodeClusters
 from glob import glob
 import os
 import json
@@ -22,7 +22,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
                 galaxy = json.load(f)
             galaxies_from_files[galaxy['name']] = galaxy
         for name, g in self.galaxies.items():
-            out = g._json()
+            out = g.to_dict()
             self.assertDictEqual(out, galaxies_from_files[g.name])
 
     def test_dump_clusters(self):
@@ -32,7 +32,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
                 cluster = json.load(f)
             clusters_from_files[cluster['name']] = cluster
         for name, c in self.clusters.items():
-            out = c._json()
+            out = c.to_dict()
             self.assertCountEqual(out, clusters_from_files[c.name])
 
     def test_validate_schema_clusters(self):
@@ -70,4 +70,4 @@ class TestPyMISPGalaxies(unittest.TestCase):
 
     def test_json(self):
         for c in self.clusters.values():
-            json.dumps(c, cls=EncodeGalaxies)
+            json.dumps(c, cls=EncodeClusters)

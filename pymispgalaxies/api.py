@@ -18,10 +18,15 @@ except ImportError:
 
 class EncodeGalaxies(JSONEncoder):
     def default(self, obj):
-        try:
-            return obj._json()
-        except AttributeError:
-            return JSONEncoder.default(self, obj)
+        if isinstance(obj, Galaxy):
+            return obj.to_dict()
+        return JSONEncoder.default(self, obj)
+
+class EncodeClusters(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (Cluster, ClusterValue, ClusterValueMeta)):
+            return obj.to_dict()
+        return JSONEncoder.default(self, obj)
 
 
 class PyMISPGalaxiesError(Exception):
@@ -45,7 +50,7 @@ class Galaxy():
         self.version = self.galaxy['version']
         self.uuid = self.galaxy['uuid']
 
-    def _json(self):
+    def to_dict(self):
         return {'type': self.type, 'name': self.name, 'description': self.description,
                 'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
 
@@ -104,7 +109,7 @@ class ClusterValueMeta():
         # defined on the schema
         self.additional_properties = m
 
-    def _json(self):
+    def to_dict(self):
         to_return = {}
         if self.type:
             to_return['type'] = self.type
@@ -160,12 +165,12 @@ class ClusterValue():
             return None
         return ClusterValueMeta(m)
 
-    def _json(self):
+    def to_dict(self):
         to_return = {'value': self.value}
         if self.description:
             to_return['description'] = self.description
         if self.meta:
-            to_return['meta'] = self.meta._json()
+            to_return['meta'] = self.meta
         return to_return
 
 
@@ -212,11 +217,11 @@ class Cluster(collections.Mapping):
     def __iter__(self):
         return iter(self.cluster_values)
 
-    def _json(self):
+    def to_dict(self):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'values': []}
-        to_return['values'] = [v._json() for v in self.values()]
+        to_return['values'] = [v for v in self.values()]
         return to_return
 
 
