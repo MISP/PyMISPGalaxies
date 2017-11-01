@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag, EncodeGalaxies, EncodeClusters
+from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag
 from glob import glob
 import os
 import json
@@ -69,5 +69,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
             self.assertIsNot(len(c), 0)
 
     def test_json(self):
+        for g in self.galaxies.values():
+            g.to_json()
         for c in self.clusters.values():
-            json.dumps(c, cls=EncodeClusters)
+            c.to_json()

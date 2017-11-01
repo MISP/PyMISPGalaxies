@@ -50,6 +50,9 @@ class Galaxy():
         self.version = self.galaxy['version']
         self.uuid = self.galaxy['uuid']
 
+    def to_json(self):
+        return json.dumps(self, cls=EncodeGalaxies)
+
     def to_dict(self):
         return {'type': self.type, 'name': self.name, 'description': self.description,
                 'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
@@ -109,6 +112,9 @@ class ClusterValueMeta():
         # defined on the schema
         self.additional_properties = m
 
+    def to_json(self):
+        return json.dumps(self, cls=EncodeClusters)
+
     def to_dict(self):
         to_return = {}
         if self.type:
@@ -165,6 +171,9 @@ class ClusterValue():
             return None
         return ClusterValueMeta(m)
 
+    def to_json(self):
+        return json.dumps(self, cls=EncodeClusters)
+
     def to_dict(self):
         to_return = {'value': self.value}
         if self.description:
@@ -216,6 +225,9 @@ class Cluster(collections.Mapping):
 
     def __iter__(self):
         return iter(self.cluster_values)
+
+    def to_json(self):
+        return json.dumps(self, cls=EncodeClusters)
 
     def to_dict(self):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
