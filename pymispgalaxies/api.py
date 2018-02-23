@@ -22,6 +22,7 @@ class EncodeGalaxies(JSONEncoder):
             return obj.to_dict()
         return JSONEncoder.default(self, obj)
 
+
 class EncodeClusters(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (Cluster, ClusterValue, ClusterValueMeta)):
@@ -60,13 +61,17 @@ class Galaxy():
 
 class Galaxies(collections.Mapping):
 
-    def __init__(self):
-        self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
-                                              'data', 'misp-galaxy', 'galaxies')
+    def __init__(self, galaxies=[]):
+        if not galaxies:
+            galaxies = []
+            self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
+                                                  'data', 'misp-galaxy', 'galaxies')
+            for galaxy_file in glob(os.path.join(self.root_dir_galaxies, '*.json')):
+                with open(galaxy_file, 'r') as f:
+                    galaxies.append(json.load(f))
+
         self.galaxies = {}
-        for galaxy_file in glob(os.path.join(self.root_dir_galaxies, '*.json')):
-            with open(galaxy_file, 'r') as f:
-                galaxy = json.load(f)
+        for galaxy in galaxies:
             self.galaxies[galaxy['name']] = Galaxy(galaxy)
 
     def validate_with_schema(self):
@@ -239,13 +244,16 @@ class Cluster(collections.Mapping):
 
 class Clusters(collections.Mapping):
 
-    def __init__(self):
-        self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
-                                              'data', 'misp-galaxy', 'clusters')
+    def __init__(self, clusters=[]):
+        if not clusters:
+            clusters = []
+            self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
+                                                  'data', 'misp-galaxy', 'clusters')
+            for cluster_file in glob(os.path.join(self.root_dir_clusters, '*.json')):
+                with open(cluster_file, 'r') as f:
+                    clusters.append(json.load(f))
         self.clusters = {}
-        for cluster_file in glob(os.path.join(self.root_dir_clusters, '*.json')):
-            with open(cluster_file, 'r') as f:
-                cluster = json.load(f)
+        for cluster in clusters:
             self.clusters[cluster['type']] = Cluster(cluster)
 
     def validate_with_schema(self):
@@ -267,7 +275,7 @@ class Clusters(collections.Mapping):
             cluster = self.get(cluster_type)
             value = cluster[cluster_value]
             return cluster, value
-        except:
+        except Exception:
             raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
     def search(self, query):
