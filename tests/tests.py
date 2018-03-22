@@ -6,14 +6,25 @@ from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag
 from glob import glob
 import os
 import json
+from collections import Counter
 
 
 class TestPyMISPGalaxies(unittest.TestCase):
 
     def setUp(self):
         self.galaxies = Galaxies()
-        self.clusters = Clusters()
+        self.clusters = Clusters(skip_duplicates=True)
         self.maxDiff = None
+
+    def test_duplicates(self):
+        has_duplicates = False
+        for name, c in self.clusters.items():
+            if c.duplicates:
+                has_duplicates = True
+                to_print = Counter(c.duplicates)
+                for entry, counter in to_print.items():
+                    print(counter + 1, entry)
+        self.assertFalse(has_duplicates)
 
     def test_dump_galaxies(self):
         galaxies_from_files = {}
