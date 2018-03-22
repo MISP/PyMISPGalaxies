@@ -190,7 +190,7 @@ class ClusterValue():
 
 class Cluster(collections.Mapping):
 
-    def __init__(self, cluster):
+    def __init__(self, cluster, skip_duplicates=False):
         self.cluster = cluster
         self.name = self.cluster['name']
         self.type = self.cluster['type']
@@ -200,10 +200,14 @@ class Cluster(collections.Mapping):
         self.uuid = self.cluster['uuid']
         self.version = self.cluster['version']
         self.cluster_values = {}
+        self.duplicates = []
         for value in self.cluster['values']:
             new_cluster_value = ClusterValue(value)
             if self.get(new_cluster_value.value):
-                raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
+                if skip_duplicates:
+                    self.duplicates.append((self.name, new_cluster_value.value))
+                else:
+                    raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
             self.cluster_values[new_cluster_value.value] = new_cluster_value
 
     def search(self, query):
@@ -244,7 +248,7 @@ class Cluster(collections.Mapping):
 
 class Clusters(collections.Mapping):
 
-    def __init__(self, clusters=[]):
+    def __init__(self, clusters=[], skip_duplicates=False):
         if not clusters:
             clusters = []
             self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -254,7 +258,7 @@ class Clusters(collections.Mapping):
                     clusters.append(json.load(f))
         self.clusters = {}
         for cluster in clusters:
-            self.clusters[cluster['type']] = Cluster(cluster)
+            self.clusters[cluster['type']] = Cluster(cluster, skip_duplicates=skip_duplicates)
 
     def validate_with_schema(self):
         if not HAS_JSONSCHEMA:
