@@ -164,10 +164,13 @@ class ClusterValue():
     def __init__(self, v):
         if not v['value']:
             raise PyMISPGalaxiesError("Invalid cluster (no value): {}".format(v))
+        self.uuid = v.get('uuid', None)
         self.value = v['value']
         self.description = v.get('description')
         self.meta = self.__init_meta(v.get('meta'))
         self.searchable = [self.value]
+        if self.uuid:
+            self.searchable.append(self.uuid)
         if self.meta and self.meta.synonyms:
             self.searchable += self.meta.synonyms
 
@@ -181,6 +184,8 @@ class ClusterValue():
 
     def to_dict(self):
         to_return = {'value': self.value}
+        if self.uuid:
+            to_return['uuid'] = self.uuid
         if self.description:
             to_return['description'] = self.description
         if self.meta:
