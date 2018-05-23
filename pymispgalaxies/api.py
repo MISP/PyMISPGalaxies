@@ -50,13 +50,17 @@ class Galaxy():
         self.description = self.galaxy['description']
         self.version = self.galaxy['version']
         self.uuid = self.galaxy['uuid']
+        self.namespace = self.galaxy.pop('namespace', None)
 
     def to_json(self):
         return json.dumps(self, cls=EncodeGalaxies)
 
     def to_dict(self):
-        return {'type': self.type, 'name': self.name, 'description': self.description,
-                'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
+        to_return = {'type': self.type, 'name': self.name, 'description': self.description,
+                     'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
+        if self.namespace:
+            to_return['namespace'] = self.namespace
+        return to_return
 
 
 class Galaxies(collections.Mapping):
