@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import unittest
@@ -7,6 +7,7 @@ from glob import glob
 import os
 import json
 from collections import Counter
+import warnings
 
 
 class TestPyMISPGalaxies(unittest.TestCase):
@@ -15,6 +16,16 @@ class TestPyMISPGalaxies(unittest.TestCase):
         self.galaxies = Galaxies()
         self.clusters = Clusters(skip_duplicates=True)
         self.maxDiff = None
+
+    def test_searchable(self):
+        for cluster in self.clusters.values():
+            all_searchable = []
+            for c_values in cluster.values():
+                all_searchable += c_values.searchable
+            count = Counter(all_searchable)
+            for k, v in count.items():
+                if v != 1:
+                    warnings.warn(f'Duplicate on {cluster.type}: {k}')
 
     def test_duplicates(self):
         has_duplicates = False

@@ -177,6 +177,7 @@ class ClusterValue():
             self.searchable.append(self.uuid)
         if self.meta and self.meta.synonyms:
             self.searchable += self.meta.synonyms
+        self.searchable = list(set(self.searchable))
 
     def __init_meta(self, m):
         if not m:
@@ -219,11 +220,15 @@ class Cluster(collections.Mapping):
                     raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
             self.cluster_values[new_cluster_value.value] = new_cluster_value
 
-    def search(self, query):
+    def search(self, query, return_tags=False):
         matching = []
         for v in self.values():
             if [s for s in v.searchable if query.lower() in s.lower()]:
-                matching.append(v)
+                if return_tags:
+                    matching.append('misp-galaxy:{}="{}"'.format(self.type, v.value))
+                    pass
+                else:
+                    matching.append(v)
         return matching
 
     def machinetags(self):
@@ -291,10 +296,10 @@ class Clusters(collections.Mapping):
         except Exception:
             raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
-    def search(self, query):
+    def search(self, query, return_tags=False):
         to_return = []
         for cluster in self.values():
-            values = cluster.search(query)
+            values = cluster.search(query, return_tags)
             if not values:
                 continue
             to_return.append((cluster, values))
