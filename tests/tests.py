@@ -25,7 +25,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
             count = Counter(all_searchable)
             for k, v in count.items():
                 if v != 1:
-                    warnings.warn(f'Duplicate on {cluster.type}: {k}')
+                    warnings.warn('Duplicate on {}: {}'.format(cluster.type, k))
 
     def test_duplicates(self):
         has_duplicates = False
