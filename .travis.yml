@@ -8,12 +8,12 @@ python:
     - "nightly"
 
 install:
-    - pip install coveralls codecov jsonschema
-    - pip install .
+    - pip install pipenv
+    - pipenv install -d
 
 script:
-    - nosetests --with-coverage --cover-package=pymispgalaxies -d
+    - pipenv run nosetests --with-coverage --cover-package=pymispgalaxies -d
 
 after_success:
-    - codecov
-    - coveralls
+    - pipenv run codecov
+    - pipenv run coveralls
