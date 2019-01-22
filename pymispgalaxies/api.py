@@ -209,6 +209,7 @@ class Cluster(collections.Mapping):
         self.description = self.cluster['description']
         self.uuid = self.cluster['uuid']
         self.version = self.cluster['version']
+        self.category = self.cluster['category']
         self.cluster_values = {}
         self.duplicates = []
         for value in self.cluster['values']:
@@ -255,7 +256,8 @@ class Cluster(collections.Mapping):
     def to_dict(self):
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
-                     'uuid': self.uuid, 'version': self.version, 'values': []}
+                     'uuid': self.uuid, 'version': self.version, 'category': self.category,
+                     'values': []}
         to_return['values'] = [v for v in self.values()]
         return to_return
 
