@@ -55,6 +55,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
             clusters_from_files[cluster['name']] = cluster
         for name, c in self.clusters.items():
             out = c.to_dict()
+            print(name, c.name)
             self.assertCountEqual(out, clusters_from_files[c.name])
 
     def test_validate_schema_clusters(self):
