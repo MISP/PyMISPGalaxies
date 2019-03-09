@@ -51,6 +51,7 @@ class Galaxy():
         self.version = self.galaxy['version']
         self.uuid = self.galaxy['uuid']
         self.namespace = self.galaxy.pop('namespace', None)
+        self.kill_chain_order = self.galaxy.pop('kill_chain_order', None)
 
     def to_json(self):
         return json.dumps(self, cls=EncodeGalaxies)
@@ -60,6 +61,8 @@ class Galaxy():
                      'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
         if self.namespace:
             to_return['namespace'] = self.namespace
+        if self.kill_chain_order:
+            to_return['kill_chain_order'] = self.kill_chain_order
         return to_return
 
 
