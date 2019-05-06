@@ -6,7 +6,7 @@ from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag
 from glob import glob
 import os
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 import warnings
 
 
@@ -96,3 +96,20 @@ class TestPyMISPGalaxies(unittest.TestCase):
             g.to_json()
         for c in self.clusters.values():
             c.to_json()
+
+    def test_uuids(self):
+        all_uuids = defaultdict(list)
+        for cluster in self.clusters.values():
+            # Skip deprecated
+            if self.galaxies[cluster.name].namespace == 'deprecated':
+                continue
+            all_uuids[cluster.uuid].append(cluster.name)
+            for value in cluster.values():
+                all_uuids[value.uuid].append(f'{cluster.name}|{value.value}')
+
+        errors = {}
+        for uuid, entries in all_uuids.items():
+            if len(entries) != 1:
+                errors[uuid] = entries
+        print(json.dumps(errors, indent=2))
+        self.assertFalse(errors)
