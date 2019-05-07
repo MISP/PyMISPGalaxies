@@ -8,13 +8,14 @@ import os
 import json
 from collections import Counter, defaultdict
 import warnings
+from uuid import UUID
 
 
 class TestPyMISPGalaxies(unittest.TestCase):
 
     def setUp(self):
         self.galaxies = Galaxies()
-        self.clusters = Clusters(skip_duplicates=True)
+        self.clusters = Clusters(skip_duplicates=False)
         self.maxDiff = None
 
     def test_searchable(self):
@@ -25,7 +26,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
             count = Counter(all_searchable)
             for k, v in count.items():
                 if v != 1:
-                    warnings.warn('Duplicate on {}: {}'.format(cluster.type, k))
+                    warnings.warn('On search in {}: {} is present multiple times'.format(cluster.type, k))
 
     def test_duplicates(self):
         has_duplicates = False
@@ -103,8 +104,16 @@ class TestPyMISPGalaxies(unittest.TestCase):
             # Skip deprecated
             if self.galaxies[cluster.name].namespace == 'deprecated':
                 continue
+            try:
+                self.assertIsInstance(UUID(cluster.uuid), UUID, f'{cluster.name} - {cluster.uuid}')
+            except ValueError:
+                raise Exception(f'{cluster.name} - {cluster.uuid}')
             all_uuids[cluster.uuid].append(cluster.name)
             for value in cluster.values():
+                try:
+                    self.assertIsInstance(UUID(value.uuid), UUID, f'{cluster.name} - {value.value} - {value.uuid}')
+                except ValueError:
+                    raise Exception(f'{cluster.name} - {value.value} - {value.uuid}')
                 all_uuids[value.uuid].append(f'{cluster.name}|{value.value}')
 
         errors = {}
