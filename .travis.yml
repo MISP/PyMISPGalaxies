@@ -13,7 +13,7 @@ install:
     - pipenv install -d
 
 script:
-    - pipenv run nosetests --with-coverage --cover-package=pymispgalaxies -d
+    - pipenv run nosetests-3.4 --with-coverage --cover-package=pymispgalaxies -d
 
 after_success:
     - pipenv run codecov
