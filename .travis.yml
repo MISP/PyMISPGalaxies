@@ -18,7 +18,7 @@ install:
 
 script:
     - poetry run nosetests-3.4 --with-coverage --cover-package=pymispgalaxies -d
-    - poetry run mypi .
+    - poetry run mypy .
 
 after_success:
     - poetry run codecov
