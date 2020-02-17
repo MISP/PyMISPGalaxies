@@ -13,6 +13,7 @@ python:
 install:
     - pip install poetry
     # Blocker: https://github.com/python-poetry/poetry/issues/1009
+    - pip install mypy
     - poetry build
     - pip install dist/*.whl
 
