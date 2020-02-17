@@ -5,16 +5,19 @@ cache: pip
 python:
     - "3.6"
     - "3.6-dev"
+    - "3.7"
     - "3.7-dev"
-    - "nightly"
+    - "3.8"
+    - "3.8-dev"
 
 install:
-    - pip install pipenv
-    - pipenv install -d
+    - pip install poetry
+    - poetry install
 
 script:
-    - pipenv run nosetests-3.4 --with-coverage --cover-package=pymispgalaxies -d
+    - poetry run nosetests-3.4 --with-coverage --cover-package=pymispgalaxies -d
+    - poetry run mypi .
 
 after_success:
-    - pipenv run codecov
-    - pipenv run coveralls
+    - poetry run codecov
+    - poetry run coveralls

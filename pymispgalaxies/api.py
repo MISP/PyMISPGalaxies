@@ -8,9 +8,10 @@ import sys
 import collections
 from glob import glob
 import re
+from typing import List, Dict, Optional, Any, Tuple
 
 try:
-    import jsonschema
+    import jsonschema  # type: ignore
     HAS_JSONSCHEMA = True
 except ImportError:
     HAS_JSONSCHEMA = False
@@ -31,7 +32,7 @@ class EncodeClusters(JSONEncoder):
 
 
 class PyMISPGalaxiesError(Exception):
-    def __init__(self, message):
+    def __init__(self, message: str):
         super(PyMISPGalaxiesError, self).__init__(message)
         self.message = message
 
@@ -42,7 +43,7 @@ class UnableToRevertMachinetag(PyMISPGalaxiesError):
 
 class Galaxy():
 
-    def __init__(self, galaxy):
+    def __init__(self, galaxy: Dict[str, str]):
         self.galaxy = galaxy
         self.type = self.galaxy['type']
         self.name = self.galaxy['name']
@@ -53,10 +54,10 @@ class Galaxy():
         self.namespace = self.galaxy.pop('namespace', None)
         self.kill_chain_order = self.galaxy.pop('kill_chain_order', None)
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self, cls=EncodeGalaxies)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         to_return = {'type': self.type, 'name': self.name, 'description': self.description,
                      'version': self.version, 'uuid': self.uuid, 'icon': self.icon}
         if self.namespace:
@@ -68,7 +69,7 @@ class Galaxy():
 
 class Galaxies(collections.Mapping):
 
-    def __init__(self, galaxies=[]):
+    def __init__(self, galaxies: List=[]):
         if not galaxies:
             galaxies = []
             self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -103,7 +104,7 @@ class Galaxies(collections.Mapping):
 
 class ClusterValueMeta():
 
-    def __init__(self, m):
+    def __init__(self, m: Dict[str, str]):
         self.type = m.pop('type', None)
         self.complexity = m.pop('complexity', None)
         self.effectiveness = m.pop('effectiveness', None)
@@ -124,10 +125,10 @@ class ClusterValueMeta():
         # defined on the schema
         self.additional_properties = m
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self, cls=EncodeClusters)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         to_return = {}
         if self.type:
             to_return['type'] = self.type
@@ -168,7 +169,7 @@ class ClusterValueMeta():
 
 class ClusterValue():
 
-    def __init__(self, v):
+    def __init__(self, v: Dict[str, Any]):
         if not v['value']:
             raise PyMISPGalaxiesError("Invalid cluster (no value): {}".format(v))
         self.uuid = v.get('uuid', None)
@@ -182,15 +183,15 @@ class ClusterValue():
             self.searchable += self.meta.synonyms
         self.searchable = list(set(self.searchable))
 
-    def __init_meta(self, m):
+    def __init_meta(self, m: Optional[Dict[str, str]]) -> Optional[ClusterValueMeta]:
         if not m:
             return None
         return ClusterValueMeta(m)
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self, cls=EncodeClusters)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict:
         to_return = {'value': self.value}
         if self.uuid:
             to_return['uuid'] = self.uuid
@@ -203,7 +204,7 @@ class ClusterValue():
 
 class Cluster(collections.Mapping):
 
-    def __init__(self, cluster, skip_duplicates=False):
+    def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool=False):
         self.cluster = cluster
         self.name = self.cluster['name']
         self.type = self.cluster['type']
@@ -224,7 +225,7 @@ class Cluster(collections.Mapping):
                     raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
             self.cluster_values[new_cluster_value.value] = new_cluster_value
 
-    def search(self, query, return_tags=False):
+    def search(self, query: str, return_tags: bool=False) -> List[str]:
         matching = []
         for v in self.values():
             if [s for s in v.searchable if query.lower() in s.lower()]:
@@ -235,7 +236,7 @@ class Cluster(collections.Mapping):
                     matching.append(v)
         return matching
 
-    def machinetags(self):
+    def machinetags(self) -> List[str]:
         to_return = []
         for v in self.values():
             to_return.append('misp-galaxy:{}="{}"'.format(self.type, v.value))
@@ -253,10 +254,10 @@ class Cluster(collections.Mapping):
     def __iter__(self):
         return iter(self.cluster_values)
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self, cls=EncodeClusters)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict:
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'category': self.category,
@@ -267,7 +268,7 @@ class Cluster(collections.Mapping):
 
 class Clusters(collections.Mapping):
 
-    def __init__(self, clusters=[], skip_duplicates=False):
+    def __init__(self, clusters: List=[], skip_duplicates: bool=False):
         if not clusters:
             clusters = []
             self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -289,19 +290,19 @@ class Clusters(collections.Mapping):
         for c in self.values():
             jsonschema.validate(c.cluster, loaded_schema)
 
-    def all_machinetags(self):
+    def all_machinetags(self) -> List[str]:
         return [cluster.machinetags() for cluster in self.values()]
 
-    def revert_machinetag(self, machinetag):
+    def revert_machinetag(self, machinetag) -> Tuple[Cluster, ClusterValue]:
         try:
             _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
-            cluster = self.get(cluster_type)
-            value = cluster[cluster_value]
+            cluster: Cluster = self[cluster_type]
+            value: ClusterValue = cluster[cluster_value]
             return cluster, value
         except Exception:
             raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
-    def search(self, query, return_tags=False):
+    def search(self, query: str, return_tags: bool=False) -> List:
         to_return = []
         for cluster in self.values():
             values = cluster.search(query, return_tags)
