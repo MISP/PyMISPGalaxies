@@ -26,6 +26,8 @@ include = ["pymispgalaxies/data/misp-galaxy/schema_*.json",
 		   "pymispgalaxies/data/misp-galaxy/vocabularies/common/*.json",
 		   "pymispgalaxies/data/misp-galaxy/vocabularies/threat-actor/*.json"]
 
+exclude = ["pymispgalaxies/data/misp-galaxy/tools/**/*"]
+
 [tool.poetry.dependencies]
 python = "^3.6"
 jsonschema = "^3.2.0"

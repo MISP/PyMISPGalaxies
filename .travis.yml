@@ -12,7 +12,9 @@ python:
 
 install:
     - pip install poetry
-    - poetry install
+    # Blocker: https://github.com/python-poetry/poetry/issues/1009
+    - poetry build
+    - pip install dist/*.whl
 
 script:
     - poetry run nosetests-3.4 --with-coverage --cover-package=pymispgalaxies -d
