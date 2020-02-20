@@ -5,7 +5,7 @@ import json
 from json import JSONEncoder
 import os
 import sys
-import collections
+from collections.abc import Mapping
 from glob import glob
 import re
 from typing import List, Dict, Optional, Any, Tuple
@@ -67,7 +67,7 @@ class Galaxy():
         return to_return
 
 
-class Galaxies(collections.Mapping):
+class Galaxies(Mapping):
 
     def __init__(self, galaxies: List=[]):
         if not galaxies:
@@ -202,7 +202,7 @@ class ClusterValue():
         return to_return
 
 
-class Cluster(collections.Mapping):
+class Cluster(Mapping):
 
     def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool=False):
         self.cluster = cluster
@@ -266,7 +266,7 @@ class Cluster(collections.Mapping):
         return to_return
 
 
-class Clusters(collections.Mapping):
+class Clusters(Mapping):
 
     def __init__(self, clusters: List=[], skip_duplicates: bool=False):
         if not clusters:
