@@ -31,12 +31,11 @@ exclude = ["pymispgalaxies/data/misp-galaxy/tools/**/*"]
 [tool.poetry.dependencies]
 python = "^3.6"
 jsonschema = "^3.2.0"
-mypy = "^0.761"
 
 [tool.poetry.dev-dependencies]
 nose = "^1.3.7"
-mypy = "^0.761"
-coverage = "^5.1"
+mypy = "^0.790"
+coverage = "^5.3"
 
 [build-system]
 requires = ["poetry>=0.12"]
