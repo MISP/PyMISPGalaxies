@@ -71,6 +71,11 @@ class TestPyMISPGalaxies(unittest.TestCase):
             for cv in c.values():
                 if cv.meta:
                     self.assertIsNot(cv.meta.additional_properties, {})
+                    for key, value in cv.meta.to_dict().items():
+                        self.assertTrue(isinstance(value, (str, list)), value)
+                        if isinstance(value, list):
+                            for v in value:
+                                self.assertTrue(isinstance(v, str), f'Error in {c.name}: {json.dumps(value, indent=2)}')
 
     def test_machinetags(self):
         self.clusters.all_machinetags()
