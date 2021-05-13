@@ -8,7 +8,7 @@ import sys
 from collections.abc import Mapping
 from glob import glob
 import re
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any, Tuple, Iterator
 
 try:
     import jsonschema  # type: ignore
@@ -18,14 +18,14 @@ except ImportError:
 
 
 class EncodeGalaxies(JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: Any) -> Dict[str, str]:
         if isinstance(obj, Galaxy):
             return obj.to_dict()
         return JSONEncoder.default(self, obj)
 
 
 class EncodeClusters(JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: Any) -> Dict[str, str]:
         if isinstance(obj, (Cluster, ClusterValue, ClusterValueMeta)):
             return obj.to_dict()
         return JSONEncoder.default(self, obj)
@@ -67,9 +67,9 @@ class Galaxy():
         return to_return
 
 
-class Galaxies(Mapping):
+class Galaxies(Mapping):  # type: ignore
 
-    def __init__(self, galaxies: List=[]):
+    def __init__(self, galaxies: List[Dict[str, str]]=[]):
         if not galaxies:
             galaxies = []
             self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -82,7 +82,7 @@ class Galaxies(Mapping):
         for galaxy in galaxies:
             self.galaxies[galaxy['name']] = Galaxy(galaxy)
 
-    def validate_with_schema(self):
+    def validate_with_schema(self) -> None:
         if not HAS_JSONSCHEMA:
             raise ImportError('jsonschema is required: pip install jsonschema')
         schema = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -92,13 +92,13 @@ class Galaxies(Mapping):
         for g in self.galaxies.values():
             jsonschema.validate(g.galaxy, loaded_schema)
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Galaxy:
         return self.galaxies[name]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.galaxies)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.galaxies)
 
 
@@ -191,7 +191,7 @@ class ClusterValue():
     def to_json(self) -> str:
         return json.dumps(self, cls=EncodeClusters)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         to_return = {'value': self.value}
         if self.uuid:
             to_return['uuid'] = self.uuid
@@ -202,7 +202,7 @@ class ClusterValue():
         return to_return
 
 
-class Cluster(Mapping):
+class Cluster(Mapping):  # type: ignore
 
     def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool=False):
         self.cluster = cluster
@@ -242,22 +242,22 @@ class Cluster(Mapping):
             to_return.append('misp-galaxy:{}="{}"'.format(self.type, v.value))
         return to_return
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '\n'.join(self.machinetags())
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> ClusterValue:
         return self.cluster_values[name]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.cluster_values)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.cluster_values)
 
     def to_json(self) -> str:
         return json.dumps(self, cls=EncodeClusters)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> Dict[str, Any]:
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
                      'authors': self.authors, 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'category': self.category,
@@ -266,9 +266,9 @@ class Cluster(Mapping):
         return to_return
 
 
-class Clusters(Mapping):
+class Clusters(Mapping):  # type: ignore
 
-    def __init__(self, clusters: List=[], skip_duplicates: bool=False):
+    def __init__(self, clusters: List[Dict[str, str]]=[], skip_duplicates: bool=False):
         if not clusters:
             clusters = []
             self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -280,7 +280,7 @@ class Clusters(Mapping):
         for cluster in clusters:
             self.clusters[cluster['type']] = Cluster(cluster, skip_duplicates=skip_duplicates)
 
-    def validate_with_schema(self):
+    def validate_with_schema(self) -> None:
         if not HAS_JSONSCHEMA:
             raise ImportError('jsonschema is required: pip install jsonschema')
         schema = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
@@ -293,7 +293,7 @@ class Clusters(Mapping):
     def all_machinetags(self) -> List[str]:
         return [cluster.machinetags() for cluster in self.values()]
 
-    def revert_machinetag(self, machinetag) -> Tuple[Cluster, ClusterValue]:
+    def revert_machinetag(self, machinetag: str) -> Tuple[Cluster, ClusterValue]:
         try:
             _, cluster_type, cluster_value = re.findall('^([^:]*):([^=]*)="([^"]*)"$', machinetag)[0]
             cluster: Cluster = self[cluster_type]
@@ -302,7 +302,7 @@ class Clusters(Mapping):
         except Exception:
             raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
-    def search(self, query: str, return_tags: bool=False) -> List:
+    def search(self, query: str, return_tags: bool=False) -> List[Tuple[Cluster, str]]:
         to_return = []
         for cluster in self.values():
             values = cluster.search(query, return_tags)
@@ -311,16 +311,16 @@ class Clusters(Mapping):
             to_return.append((cluster, values))
         return to_return
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Cluster:
         return self.clusters[name]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.clusters)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.clusters)
 
-    def __str__(self):
+    def __str__(self) -> str:
         to_print = ''
         for cluster in self.values():
             to_print += '{}\n\n'.format(cluster)
