@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9, '3.10']
 
     steps:
 
@@ -33,7 +33,7 @@ jobs:
 
     - name: Test with nosetests
       run: |
-        poetry run nosetests-3.4 --with-coverage --cover-package=pymispgalaxies -d
+        poetry run pytest --cov=pymispgalaxies  tests/tests.py
         poetry run mypy .
 
     - name: Upload coverage to Codecov
