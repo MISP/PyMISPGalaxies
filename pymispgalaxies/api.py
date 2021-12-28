@@ -77,7 +77,7 @@ class Galaxies(Mapping):  # type: ignore
     def __init__(self, galaxies: List[Dict[str, str]]=[]):
         if not galaxies:
             galaxies = []
-            self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
+            self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),  # type: ignore
                                                   'data', 'misp-galaxy', 'galaxies')
             for galaxy_file in glob(os.path.join(self.root_dir_galaxies, '*.json')):
                 with open(galaxy_file, 'r') as f:
@@ -90,7 +90,7 @@ class Galaxies(Mapping):  # type: ignore
     def validate_with_schema(self) -> None:
         if not HAS_JSONSCHEMA:
             raise ImportError('jsonschema is required: pip install jsonschema')
-        schema = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
+        schema = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),  # type: ignore
                               'data', 'misp-galaxy', 'schema_galaxies.json')
         with open(schema, 'r') as f:
             loaded_schema = json.load(f)
@@ -231,11 +231,16 @@ class Cluster(Mapping):  # type: ignore
             self.cluster_values[new_cluster_value.value] = new_cluster_value
 
     @overload
-    def search(self, query: str, return_tags: Literal[False]=False) -> List[ClusterValue]: ...
+    def search(self, query: str, return_tags: Literal[False]=False) -> List[ClusterValue]:
+        ...
+
     @overload
-    def search(self, query: str, return_tags: Literal[True]) -> List[str]: ...
+    def search(self, query: str, return_tags: Literal[True]) -> List[str]:
+        ...
+
     @overload
-    def search(self, query: str, return_tags: bool) -> Union[List[ClusterValue], List[str]]: ...
+    def search(self, query: str, return_tags: bool) -> Union[List[ClusterValue], List[str]]:
+        ...
 
     def search(self, query: str, return_tags: bool=False) -> Union[List[ClusterValue], List[str]]:
         matching = []
@@ -283,7 +288,7 @@ class Clusters(Mapping):  # type: ignore
     def __init__(self, clusters: List[Dict[str, str]]=[], skip_duplicates: bool=False):
         if not clusters:
             clusters = []
-            self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
+            self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),  # type: ignore
                                                   'data', 'misp-galaxy', 'clusters')
             for cluster_file in glob(os.path.join(self.root_dir_clusters, '*.json')):
                 with open(cluster_file, 'r') as f:
@@ -295,7 +300,7 @@ class Clusters(Mapping):  # type: ignore
     def validate_with_schema(self) -> None:
         if not HAS_JSONSCHEMA:
             raise ImportError('jsonschema is required: pip install jsonschema')
-        schema = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),
+        schema = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),  # type: ignore
                               'data', 'misp-galaxy', 'schema_clusters.json')
         with open(schema, 'r') as f:
             loaded_schema = json.load(f)

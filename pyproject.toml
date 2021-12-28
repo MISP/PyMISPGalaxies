@@ -29,11 +29,11 @@ include = ["pymispgalaxies/data/misp-galaxy/schema_*.json",
 exclude = ["pymispgalaxies/data/misp-galaxy/tools/**/*"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-jsonschema = "^4.3"
+python = "^3.6"
+jsonschema = "^3.2"
 
 [tool.poetry.dev-dependencies]
-mypy = "^0.920"
+mypy = "^0.930"
 coverage = "^6.0"
 pytest-cov = "^3.0.0"
 
