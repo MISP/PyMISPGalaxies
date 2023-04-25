@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pymispgalaxies"
-version = "0.2"
+version = "0.3"
 description = "Python API for the MISP Galaxies."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
@@ -38,5 +38,5 @@ coverage = "^7.2.3"
 pytest-cov = "^4.0.0"
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["poetry-core"]
 build-backend = "poetry.masonry.api"
