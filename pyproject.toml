@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pymispgalaxies"
-version = "0.3"
+version = "0.4"
 description = "Python API for the MISP Galaxies."
 authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
 license = "BSD-3-Clause"
