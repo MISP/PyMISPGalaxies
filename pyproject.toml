@@ -30,11 +30,11 @@ exclude = ["pymispgalaxies/data/misp-galaxy/tools/**/*"]
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
-jsonschema = "^4.19.0"
+jsonschema = "^4.19.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^1.5.1"
-coverage = "^7.3.0"
+coverage = "^7.3.2"
 pytest-cov = "^4.1.0"
 
 [build-system]
