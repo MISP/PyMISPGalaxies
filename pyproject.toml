@@ -35,7 +35,7 @@ jsonschema = "^4.20.0"
 [tool.poetry.dev-dependencies]
 mypy = "^1.8.0"
 coverage = "^7.4.0"
-pytest-cov = "^4.1.0"
+pytest-cov = "^5.0.0"
 
 [build-system]
 requires = ["poetry-core"]
