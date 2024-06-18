@@ -528,7 +528,7 @@ class Cluster(Mapping):  # type: ignore
                 self.duplicates.append((self.name, cv.value))
             else:
                 raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(cv.value, self.name))
-        self.cluster_values[cv.value] = cv
+        self.cluster_values[cv.value.lower()] = cv
 
     def save(self, name: str) -> None:
         """
@@ -562,7 +562,7 @@ class Cluster(Mapping):  # type: ignore
         Returns:
             ClusterValue: The cluster value with the specified name.
         """
-        return self.cluster_values[name]
+        return self.cluster_values[name.lower()]
 
     def __len__(self) -> int:
         """
