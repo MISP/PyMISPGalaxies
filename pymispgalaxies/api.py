@@ -345,6 +345,7 @@ class Cluster(Mapping):  # type: ignore
 
     Attributes:
         cluster (Dict[str, Any]): The dictionary containing the cluster data.
+        cluster (str): The name of the existing cluster to load from the data folder.
         name (str): The name of the cluster.
         type (str): The type of the cluster.
         source (str): The source of the cluster.
@@ -368,20 +369,34 @@ class Cluster(Mapping):  # type: ignore
         to_json(self) -> str: Converts the Cluster object to a JSON string.
         to_dict(self) -> Dict[str, Any]: Converts the Cluster object to a dictionary.
     """
-    def __init__(self, cluster: Dict[str, Any] | str, skip_duplicates: bool = False):
+    @overload
+    def __init__(self, cluster: str, skip_duplicates: bool = False):
         """
-        Initializes a Cluster object.
+        Initializes a Cluster object from an existing cluster.
 
         Args:
-            cluster (Dict[str, Any] | str): A dictionary containing the cluster data, or the name of the existing cluster to load from the data folder.
+            cluster (str): The name of the existing cluster to load from the data folder.
             skip_duplicates (bool, optional): Flag indicating whether to skip duplicate values. Defaults to False.
         """
+        ...
+
+    @overload
+    def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool = False):
+        """
+        Initializes a Cluster object from a dictionary.
+
+        Args:
+            cluster (Dict[str, Any]): A dictionary containing the cluster data.
+            skip_duplicates (bool, optional): Flag indicating whether to skip duplicate values. Defaults to False.
+        """
+        ...
+
+    def __init__(self, cluster, skip_duplicates: bool = False):
         if isinstance(cluster, str):
             root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)), 'data', 'misp-galaxy', 'clusters')
             cluster_file = os.path.join(root_dir_clusters, f"{cluster}.json")
             with open(cluster_file, 'r') as f:
                 self.__init__(json.load(f), skip_duplicates=skip_duplicates)
-
         else:
             self.cluster = cluster
             self.name = self.cluster['name']
@@ -463,10 +478,20 @@ class Cluster(Mapping):  # type: ignore
                 return value
         raise KeyError('No value with external_id: {}'.format(external_id))
 
-    def add(self, cv: ClusterValue, skip_duplicates: bool) -> None:
+    @overload
+    def add(self, cv: dict, skip_duplicates: bool = False) -> None:
+        ...
+
+    @overload
+    def add(self, cv: ClusterValue, skip_duplicates: bool = False) -> None:
+        ...
+
+    def add(self, cv, skip_duplicates: bool = False) -> None:
         """
         Adds a cluster value to the cluster.
         """
+        if isinstance(cv, dict):
+            cv = ClusterValue(cv)
         if self.get(cv.value):
             if skip_duplicates:
                 self.duplicates.append((self.name, cv.value))
