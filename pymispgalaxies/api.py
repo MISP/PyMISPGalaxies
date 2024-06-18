@@ -74,7 +74,7 @@ class Galaxy():
 
 class Galaxies(Mapping):  # type: ignore
 
-    def __init__(self, galaxies: List[Dict[str, str]]=[]):
+    def __init__(self, galaxies: List[Dict[str, str]] = []):
         if not galaxies:
             galaxies = []
             self.root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),  # type: ignore
@@ -209,7 +209,7 @@ class ClusterValue():
 
 class Cluster(Mapping):  # type: ignore
 
-    def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool=False):
+    def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool = False):
         self.cluster = cluster
         self.name = self.cluster['name']
         self.type = self.cluster['type']
@@ -231,7 +231,7 @@ class Cluster(Mapping):  # type: ignore
             self.cluster_values[new_cluster_value.value] = new_cluster_value
 
     @overload
-    def search(self, query: str, return_tags: Literal[False]=False) -> List[ClusterValue]:
+    def search(self, query: str, return_tags: Literal[False] = False) -> List[ClusterValue]:
         ...
 
     @overload
@@ -242,7 +242,7 @@ class Cluster(Mapping):  # type: ignore
     def search(self, query: str, return_tags: bool) -> Union[List[ClusterValue], List[str]]:
         ...
 
-    def search(self, query: str, return_tags: bool=False) -> Union[List[ClusterValue], List[str]]:
+    def search(self, query: str, return_tags: bool = False) -> Union[List[ClusterValue], List[str]]:
         matching = []
         for v in self.values():
             if [s for s in v.searchable if query.lower() in s.lower()]:
@@ -285,7 +285,7 @@ class Cluster(Mapping):  # type: ignore
 
 class Clusters(Mapping):  # type: ignore
 
-    def __init__(self, clusters: List[Dict[str, str]]=[], skip_duplicates: bool=False):
+    def __init__(self, clusters: List[Dict[str, str]] = [], skip_duplicates: bool = False):
         if not clusters:
             clusters = []
             self.root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)),  # type: ignore
@@ -319,7 +319,7 @@ class Clusters(Mapping):  # type: ignore
         except Exception:
             raise UnableToRevertMachinetag('The machinetag {} could not be found.'.format(machinetag))
 
-    def search(self, query: str, return_tags: bool=False) -> List[Tuple[Cluster, str]]:
+    def search(self, query: str, return_tags: bool = False) -> List[Tuple[Cluster, str]]:
         to_return = []
         for cluster in self.values():
             values = cluster.search(query, return_tags)
