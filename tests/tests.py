@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag
+from pymispgalaxies import Galaxies, Clusters, Cluster, UnableToRevertMachinetag
 from glob import glob
 import os
 import json
@@ -129,7 +129,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
         self.assertFalse(errors)
 
     def test_get_by_external_id(self):
-        cluster = self.clusters.get('mitre-attack-pattern')
+        cluster = Cluster(cluster='mitre-attack-pattern')
         self.assertIsNotNone(cluster)
         cluster_by_external_id = cluster.get_by_external_id('T1525')
         cluster_by_value = cluster.get('Implant Internal Image - T1525')

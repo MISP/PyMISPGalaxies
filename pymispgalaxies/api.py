@@ -357,7 +357,7 @@ class Cluster(Mapping):  # type: ignore
         duplicates (List[Tuple[str, str]]): A list of tuples representing duplicate values in the cluster, where each tuple contains the name of the cluster and the duplicate value.
 
     Methods:
-        __init__(self, cluster: Dict[str, Any], skip_duplicates: bool = False): Initializes a Cluster object.
+        __init__(self, cluster: Dict[str, Any] | str, skip_duplicates: bool = False): Initializes a Cluster object from a dict or existing cluster file
         search(self, query: str, return_tags: bool = False) -> Union[List[ClusterValue], List[str]]: Searches for values in the cluster that match the given query.
         machinetags(self) -> List[str]: Returns a list of machine tags for the cluster.
         get_by_external_id(self, external_id: str) -> ClusterValue: Returns the cluster value with the specified external ID.
@@ -368,33 +368,40 @@ class Cluster(Mapping):  # type: ignore
         to_json(self) -> str: Converts the Cluster object to a JSON string.
         to_dict(self) -> Dict[str, Any]: Converts the Cluster object to a dictionary.
     """
-    def __init__(self, cluster: Dict[str, Any], skip_duplicates: bool = False):
+    def __init__(self, cluster: Dict[str, Any] | str, skip_duplicates: bool = False):
         """
         Initializes a Cluster object.
 
         Args:
-            cluster (Dict[str, Any]): A dictionary containing the cluster data.
+            cluster (Dict[str, Any] | str): A dictionary containing the cluster data, or the name of the existing cluster to load from the data folder.
             skip_duplicates (bool, optional): Flag indicating whether to skip duplicate values. Defaults to False.
         """
-        self.cluster = cluster
-        self.name = self.cluster['name']
-        self.type = self.cluster['type']
-        self.source = self.cluster['source']
-        self.authors = self.cluster['authors']
-        self.description = self.cluster['description']
-        self.uuid = self.cluster['uuid']
-        self.version = self.cluster['version']
-        self.category = self.cluster['category']
-        self.cluster_values = {}
-        self.duplicates = []
-        for value in self.cluster['values']:
-            new_cluster_value = ClusterValue(value)
-            if self.get(new_cluster_value.value):
-                if skip_duplicates:
-                    self.duplicates.append((self.name, new_cluster_value.value))
-                else:
-                    raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
-            self.cluster_values[new_cluster_value.value] = new_cluster_value
+        if isinstance(cluster, str):
+            root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)), 'data', 'misp-galaxy', 'clusters')
+            cluster_file = os.path.join(root_dir_clusters, f"{cluster}.json")
+            with open(cluster_file, 'r') as f:
+                self.__init__(json.load(f), skip_duplicates=skip_duplicates)
+
+        else:
+            self.cluster = cluster
+            self.name = self.cluster['name']
+            self.type = self.cluster['type']
+            self.source = self.cluster['source']
+            self.authors = self.cluster['authors']
+            self.description = self.cluster['description']
+            self.uuid = self.cluster['uuid']
+            self.version = self.cluster['version']
+            self.category = self.cluster['category']
+            self.cluster_values = {}
+            self.duplicates = []
+            for value in self.cluster['values']:
+                new_cluster_value = ClusterValue(value)
+                if self.get(new_cluster_value.value):
+                    if skip_duplicates:
+                        self.duplicates.append((self.name, new_cluster_value.value))
+                    else:
+                        raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
+                self.cluster_values[new_cluster_value.value] = new_cluster_value
 
     @overload
     def search(self, query: str, return_tags: Literal[False] = False) -> List[ClusterValue]:
