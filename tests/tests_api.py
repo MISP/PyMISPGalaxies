@@ -9,7 +9,7 @@ class TestPyMISPGalaxiesApi(unittest.TestCase):
 
     def setUp(self):
         self.galaxies = Galaxies()
-        self.clusters = Clusters(skip_duplicates=False)
+        self.clusters = Clusters(skip_duplicates=True)
         self.maxDiff = None
 
     def test_get_by_external_id(self):

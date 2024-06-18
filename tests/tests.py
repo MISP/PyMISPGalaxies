@@ -15,7 +15,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
 
     def setUp(self):
         self.galaxies = Galaxies()
-        self.clusters = Clusters(skip_duplicates=False)
+        self.clusters = Clusters(skip_duplicates=True)
         self.maxDiff = None
 
     def test_searchable(self):
@@ -36,7 +36,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
                 to_print = Counter(c.duplicates)
                 for entry, counter in to_print.items():
                     print(counter + 1, entry)
-        self.assertFalse(has_duplicates)
+        self.assertFalse(has_duplicates, msg="Duplicates found")
 
     def test_dump_galaxies(self):
         galaxies_from_files = {}
