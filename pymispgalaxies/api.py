@@ -394,14 +394,12 @@ class Cluster(Mapping):  # type: ignore
             self.category = self.cluster['category']
             self.cluster_values = {}
             self.duplicates = []
-            for value in self.cluster['values']:
-                new_cluster_value = ClusterValue(value)
-                if self.get(new_cluster_value.value):
-                    if skip_duplicates:
-                        self.duplicates.append((self.name, new_cluster_value.value))
-                    else:
-                        raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(new_cluster_value.value, self.name))
-                self.cluster_values[new_cluster_value.value] = new_cluster_value
+            try:
+                for value in self.cluster['values']:
+                    new_cluster_value = ClusterValue(value)
+                    self.add(new_cluster_value, skip_duplicates)
+            except KeyError:
+                pass
 
     @overload
     def search(self, query: str, return_tags: Literal[False] = False) -> List[ClusterValue]:
@@ -464,6 +462,17 @@ class Cluster(Mapping):  # type: ignore
             if value.meta and value.meta.additional_properties and value.meta.additional_properties.get('external_id') == external_id:
                 return value
         raise KeyError('No value with external_id: {}'.format(external_id))
+
+    def add(self, cv: ClusterValue, skip_duplicates: bool) -> None:
+        """
+        Adds a cluster value to the cluster.
+        """
+        if self.get(cv.value):
+            if skip_duplicates:
+                self.duplicates.append((self.name, cv.value))
+            else:
+                raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(cv.value, self.name))
+        self.cluster_values[cv.value] = cv
 
     def __str__(self) -> str:
         """
