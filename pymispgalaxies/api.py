@@ -86,15 +86,15 @@ class Galaxy():
         self.namespace = self.galaxy.pop('namespace', None)
         self.kill_chain_order = self.galaxy.pop('kill_chain_order', None)
 
-    def save(self, name: str) -> None:
+    def save(self, file_name: str) -> None:
         """
-        Saves the galaxy to a file <name>.json
+        Saves the galaxy to a file <file_name>.json
 
         Args:
-            name (str): The name of the file to save the galaxy to.
+            file_name (str): The name of the file to save the galaxy to.
         """
         root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)), 'data', 'misp-galaxy', 'galaxies')  # type: ignore [type-var, arg-type]
-        galaxy_file = os.path.join(root_dir_galaxies, f"{name}.json")
+        galaxy_file = os.path.join(root_dir_galaxies, f"{file_name}.json")
         with open(galaxy_file, 'w') as f:
             json.dump(self, f, cls=EncodeGalaxies, indent=2, sort_keys=True, ensure_ascii=False)
             f.write('\n')  # needed for the beauty and to be compliant with jq_all_the_things
@@ -129,17 +129,17 @@ class Galaxies(Mapping):  # type: ignore
     A class representing a collection of MISP galaxies.
 
     Parameters:
-    - galaxies: A list of dictionaries representing the galaxies. Each dictionary should contain the name and other properties of a galaxy.
+    - galaxies: A list of dictionaries representing the galaxies. Each dictionary should contain the type and other properties of a galaxy.
                 If left empty, the galaxies are loaded from the data folder.
 
     Attributes:
-    - galaxies: A dictionary containing the galaxies, where the keys are the names of the galaxies and the values are instances of the Galaxy class.
+    - galaxies: A dictionary containing the galaxies, where the keys are the types of the galaxies and the values are instances of the Galaxy class.
     - root_dir_galaxies: The root directory of the MISP galaxies.
 
     Methods:
     - validate_with_schema: Validates the galaxies against the schema.
-    - __getitem__: Returns the galaxy with the specified name.
-    - __iter__: Returns an iterator over the galaxy names.
+    - __getitem__: Returns the galaxy with the specified type.
+    - __iter__: Returns an iterator over the galaxy types.
     - __len__: Returns the number of galaxies in the collection.
     """
 
@@ -148,7 +148,7 @@ class Galaxies(Mapping):  # type: ignore
         Initializes a new instance of the Galaxies class.
 
         Parameters:
-        - galaxies: A list of dictionaries representing the galaxies. Each dictionary should contain the name and other properties of a galaxy.
+        - galaxies: A list of dictionaries representing the galaxies. Each dictionary should contain the type and other properties of a galaxy.
                     If left empty, the galaxies are loaded from the data folder.
         """
         if not galaxies:
@@ -161,7 +161,7 @@ class Galaxies(Mapping):  # type: ignore
 
         self.galaxies = {}
         for galaxy in galaxies:
-            self.galaxies[galaxy['name']] = Galaxy(galaxy)
+            self.galaxies[galaxy['type']] = Galaxy(galaxy)
 
     def validate_with_schema(self) -> None:
         """
@@ -179,27 +179,27 @@ class Galaxies(Mapping):  # type: ignore
         for g in self.galaxies.values():
             jsonschema.validate(g.galaxy, loaded_schema)
 
-    def __getitem__(self, name: str) -> Galaxy:
+    def __getitem__(self, g_type: str) -> Galaxy:
         """
-        Returns the galaxy with the specified name.
+        Returns the galaxy with the specified type.
 
         Parameters:
-        - name: The name of the galaxy.
+        - g_type: The type of the galaxy.
 
         Returns:
-        - The Galaxy instance with the specified name.
+        - The Galaxy instance with the specified type.
 
         Raises:
-        - KeyError: If the galaxy with the specified name does not exist.
+        - KeyError: If the galaxy with the specified type does not exist.
         """
-        return self.galaxies[name]
+        return self.galaxies[g_type]
 
     def __iter__(self) -> Iterator[str]:
         """
-        Returns an iterator over the galaxy names.
+        Returns an iterator over the galaxy types.
 
         Returns:
-        - An iterator over the galaxy names.
+        - An iterator over the galaxy types.
         """
         return iter(self.galaxies)
 
