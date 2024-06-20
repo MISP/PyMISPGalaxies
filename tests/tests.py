@@ -107,7 +107,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
         all_uuids = defaultdict(list)
         for cluster in self.clusters.values():
             # Skip deprecated
-            if self.galaxies[cluster.name].namespace == 'deprecated':
+            if self.galaxies[cluster.type].namespace == 'deprecated':
                 continue
             try:
                 self.assertIsInstance(UUID(cluster.uuid), UUID, f'{cluster.name} - {cluster.uuid}')
