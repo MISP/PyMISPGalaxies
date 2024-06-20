@@ -43,10 +43,10 @@ class TestPyMISPGalaxies(unittest.TestCase):
         for galaxy_file in glob(os.path.join(self.galaxies.root_dir_galaxies, '*.json')):
             with open(galaxy_file, 'r') as f:
                 galaxy = json.load(f)
-            galaxies_from_files[galaxy['name']] = galaxy
-        for name, g in self.galaxies.items():
+            galaxies_from_files[galaxy['type']] = galaxy
+        for _, g in self.galaxies.items():
             out = g.to_dict()
-            self.assertDictEqual(out, galaxies_from_files[g.name])
+            self.assertDictEqual(out, galaxies_from_files[g.type])
 
     def test_dump_clusters(self):
         clusters_from_files = {}
