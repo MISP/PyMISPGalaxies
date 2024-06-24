@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pymispgalaxies import Galaxies, Clusters, Cluster
+from pymispgalaxies import Galaxies, Clusters, Cluster, ClusterValue
 
 
 class TestPyMISPGalaxiesApi(unittest.TestCase):
@@ -21,3 +21,49 @@ class TestPyMISPGalaxiesApi(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             cluster.get_by_external_id('XXXXXX')
+
+    def test_merge_cv(self):
+        cv_1 = ClusterValue({
+            'uuid': '1234',
+            'value': 'old value',
+            'description': 'old description',
+            'related': [
+                {
+                    'dest-uuid': '1',
+                    'type': 'subtechnique-of'
+                },
+                {
+                    'dest-uuid': '2',
+                    'type': 'old-type'
+                }
+            ]
+        })
+
+        cv_2 = ClusterValue({
+            'uuid': '1234',
+            'value': 'new value',
+            'description': 'new description',
+            'related': [
+                {
+                    'dest-uuid': '2',
+                    'type': 'new-type'
+                },
+                {
+                    'dest-uuid': '3',
+                    'type': 'similar-to'
+                }
+            ]
+        })
+
+        cv_1.merge(cv_2)
+        self.assertEqual(cv_1.value, 'new value')
+        self.assertEqual(cv_1.description, 'new description')
+        for rel in cv_1.related:
+            if rel['dest-uuid'] == '1':
+                self.assertEqual(rel['type'], 'subtechnique-of')
+            elif rel['dest-uuid'] == '2':
+                self.assertEqual(rel['type'], 'new-type')
+            elif rel['dest-uuid'] == '3':
+                self.assertEqual(rel['type'], 'similar-to')
+            else:
+                self.fail(f"Unexpected related: {rel}")

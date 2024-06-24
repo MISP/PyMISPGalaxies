@@ -339,6 +339,26 @@ class ClusterValue():
             return None
         return ClusterValueMeta(m)
 
+    def merge(self, new: 'ClusterValue') -> None:
+        """
+        Merges the new cluster value with the existing one. Practically it replaces the existing one but merges relations
+        """
+        # backup relations
+        related_backup = self.related.copy()
+        # overwrite itself
+        self.__init__(new.to_dict())  # type: ignore [misc]
+        # merge relations with backup  # LATER conver related to a class of Hashable type, as that would be much more efficient in keeping uniques
+        for rel in related_backup:
+            # if uuid exists, skip, as we already copied it
+            exists = False
+            for existing_item in self.related:
+                if rel['dest-uuid'] == existing_item['dest-uuid']:
+                    exists = True
+                    break
+            # else append rel to list
+            if not exists:
+                self.related.append(rel)
+
     def to_json(self) -> str:
         """
         Converts the ClusterValue object to a JSON string.
@@ -361,7 +381,7 @@ class ClusterValue():
         if self.description:
             to_return['description'] = self.description
         if self.meta:
-            to_return['meta'] = self.meta
+            to_return['meta'] = self.meta.to_dict()
         if self.related:
             to_return['related'] = self.related
         return to_return
@@ -519,12 +539,21 @@ class Cluster(Mapping):  # type: ignore
 
     def append(self, cv: Union[Dict[str, Any], ClusterValue], skip_duplicates: bool = False) -> None:
         """
-        Adds a cluster value to the cluster.
+        Adds a cluster value to the cluster, and merge it if it already exists.
+
+        Args:
+            cv (Union[Dict[str, Any], ClusterValue]): The cluster value to add.
+            skip_duplicates (bool, optional): Flag indicating whether to skip duplicate values. Defaults to False.
         """
         if isinstance(cv, dict):
             cv = ClusterValue(cv)
-        if self.get(cv.value):
-            if skip_duplicates:
+        existing = self.get(cv.value)
+        if existing:
+            if cv.uuid == existing.uuid:
+                # merge the existing
+                self.cluster_values[cv.value.lower()].merge(cv)
+                return
+            elif skip_duplicates:
                 self.duplicates.append((self.name, cv.value))
             else:
                 raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(cv.value, self.name))
