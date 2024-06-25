@@ -82,3 +82,38 @@ class TestPyMISPGalaxiesApi(unittest.TestCase):
 
         galaxy.description = 'new description'
         self.assertTrue(galaxy.has_changed())
+
+    def test_clustervalue_sort_related(self):
+        cv = ClusterValue({'value': 'test'})
+        item_1 = {
+            'dest-uuid': '1',
+            'type': 'subtechnique-of'
+        }
+        item_2 = {
+            'dest-uuid': '2',
+            'type': 'similar-to'
+        }
+        cv.related = []
+        cv.related.append(item_2)
+        cv.related.append(item_1)
+        self.assertListEqual(cv.related, [item_2, item_1])
+        d = cv.to_dict()
+        self.assertListEqual(d['related'], [item_1, item_2])
+
+    def test_cluster_sort_synonyms(self):
+        cv = ClusterValue({
+            'value': 'test',
+            'meta': {
+                'synonyms': ['b', 'a', 'c']
+            }})
+        d = cv.to_dict()
+        self.assertListEqual(d['meta']['synonyms'], ['a', 'b', 'c'])
+
+    def test_cluster_sort_additional_property(self):
+        cv = ClusterValue({
+            'value': 'test',
+            'meta': {
+                'hello_world': ['b', 'a', 'c']
+            }})
+        d = cv.to_dict()
+        self.assertListEqual(d['meta']['hello_world'], ['a', 'b', 'c'])

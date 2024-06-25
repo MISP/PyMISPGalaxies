@@ -31,7 +31,12 @@ class EncodeGalaxies(JSONEncoder):
 
 class EncodeClusters(JSONEncoder):
     def default(self, obj: Any) -> Dict[str, str]:
-        if isinstance(obj, (Cluster, ClusterValue, ClusterValueMeta)):
+        if isinstance(obj, list):
+            obj.sort()
+            return JSONEncoder.default(self, obj)
+        elif isinstance(obj, set):
+            return JSONEncoder.default(self, sorted(list(obj)))
+        elif isinstance(obj, (Cluster, ClusterValue, ClusterValueMeta)):
             return obj.to_dict()
         return JSONEncoder.default(self, obj)
 
@@ -122,7 +127,7 @@ class Galaxy():
         """
         return json.dumps(self, cls=EncodeGalaxies, sort_keys=True)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, Any]:
         """
         Converts the galaxy object to a dictionary.
 
@@ -229,7 +234,7 @@ class Galaxies(Mapping):  # type: ignore
 
 class ClusterValueMeta():
 
-    def __init__(self, m: Dict[str, str]):
+    def __init__(self, m: Dict[str, Any]):
         self.type = m.pop('type', None)
         self.complexity = m.pop('complexity', None)
         self.effectiveness = m.pop('effectiveness', None)
@@ -238,8 +243,9 @@ class ClusterValueMeta():
         self.colour = m.pop('colour', None)
         self.motive = m.pop('motive', None)
         self.impact = m.pop('impact', None)
-        self.refs = m.pop('refs', None)
-        self.synonyms = m.pop('synonyms', None)
+        self.refs: Set[str] = set(m.pop('refs', []))
+        self.official_refs: Set[str] = set(m.pop('official-refs', []))
+        self.synonyms: Set[str] = set(m.pop('synonyms', []))
         self.derivated_from = m.pop('derivated_from', None)
         self.status = m.pop('status', None)
         self.date = m.pop('date', None)
@@ -253,7 +259,7 @@ class ClusterValueMeta():
     def to_json(self) -> str:
         return json.dumps(self, cls=EncodeClusters, sort_keys=True)
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, Any]:
         to_return = {}
         if self.type:
             to_return['type'] = self.type
@@ -272,9 +278,11 @@ class ClusterValueMeta():
         if self.impact:
             to_return['impact'] = self.impact
         if self.refs:
-            to_return['refs'] = self.refs
+            to_return['refs'] = sorted(list(self.refs))
+        if self.official_refs:
+            to_return['official-refs'] = sorted(list(self.official_refs))
         if self.synonyms:
-            to_return['synonyms'] = self.synonyms
+            to_return['synonyms'] = sorted(list(self.synonyms))
         if self.derivated_from:
             to_return['derivated_from'] = self.derivated_from
         if self.status:
@@ -288,7 +296,11 @@ class ClusterValueMeta():
         if self.ransomnotes:
             to_return['ransomnotes'] = self.ransomnotes
         if self.additional_properties:
-            to_return.update(self.additional_properties)
+            for key, value in self.additional_properties.items():
+                if isinstance(value, list):
+                    to_return[key] = sorted(value)
+                else:
+                    to_return[key] = value
         return to_return
 
 
@@ -397,7 +409,7 @@ class ClusterValue():
         if self.meta:
             to_return['meta'] = self.meta.to_dict()
         if self.related:
-            to_return['related'] = self.related
+            to_return['related'] = sorted(self.related, key=lambda x: x['dest-uuid'])
         return to_return
 
 
