@@ -60,7 +60,7 @@ class Galaxy():
         uuid (str): The UUID of the galaxy.
         namespace (str, optional): The namespace of the galaxy.
         kill_chain_order (Dict, optional): The kill chain order of the galaxy.
-        __init_hash (int): The hash of the json representation of the galaxy at __init__().
+        _init_hash (int): The hash of the json representation of the galaxy at __init__().
     """
 
     def __init__(self, galaxy: Union[str, Dict[str, str]]):
@@ -86,7 +86,7 @@ class Galaxy():
         self.uuid = self.galaxy['uuid']
         self.namespace = self.galaxy.pop('namespace', None)
         self.kill_chain_order = self.galaxy.pop('kill_chain_order', None)
-        self.__init_hash: int = hash(self.to_json())
+        self._init_hash: int = hash(self.to_json())
 
     def save(self, file_name: str, update_version: bool = True) -> None:
         """
@@ -111,7 +111,7 @@ class Galaxy():
         Returns:
             bool: True if the galaxy has changed, False otherwise.
         """
-        return hash(self.to_json()) != self.__init_hash
+        return hash(self.to_json()) != self._init_hash
 
     def to_json(self) -> str:
         """
@@ -120,7 +120,7 @@ class Galaxy():
         Returns:
             str: The JSON representation of the galaxy object.
         """
-        return json.dumps(self, cls=EncodeGalaxies)
+        return json.dumps(self, cls=EncodeGalaxies, sort_keys=True)
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -251,7 +251,7 @@ class ClusterValueMeta():
         self.additional_properties = m
 
     def to_json(self) -> str:
-        return json.dumps(self, cls=EncodeClusters)
+        return json.dumps(self, cls=EncodeClusters, sort_keys=True)
 
     def to_dict(self) -> Dict[str, str]:
         to_return = {}
@@ -380,7 +380,7 @@ class ClusterValue():
         Returns:
             str: The JSON representation of the ClusterValue object.
         """
-        return json.dumps(self, cls=EncodeClusters)
+        return json.dumps(self, cls=EncodeClusters, sort_keys=True)
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -417,7 +417,7 @@ class Cluster(Mapping):  # type: ignore
         category (str): The category of the cluster.
         cluster_values (Dict[str, ClusterValue]): A dictionary containing the cluster values, where the keys are the values of the cluster and the values are instances of the ClusterValue class.
         duplicates (List[Tuple[str, str]]): A list of tuples representing duplicate values in the cluster, where each tuple contains the name of the cluster and the duplicate value.
-        __init_hash (int): The hash of the json representation of the cluster at __init__().
+        _init_hash (int): The hash of the json representation of the cluster at __init__().
 
     Methods:
         __init__(self, cluster: Union[Dict[str, Any], str], skip_duplicates: bool = False): Initializes a Cluster object from a dict or existing cluster file
@@ -465,7 +465,7 @@ class Cluster(Mapping):  # type: ignore
                 self.append(new_cluster_value, skip_duplicates)
         except KeyError:
             pass
-        self.__init_hash: int = hash(self.to_json())
+        self._init_hash: int = hash(self.to_json())
 
     @overload
     def search(self, query: str, return_tags: Literal[False] = False) -> List[ClusterValue]:
@@ -597,7 +597,7 @@ class Cluster(Mapping):  # type: ignore
         Returns:
             bool: True if the cluster has changed, False otherwise.
         """
-        return hash(self.to_json()) != self.__init_hash
+        return hash(self.to_json()) != self._init_hash
 
     def __str__(self) -> str:
         """
@@ -645,7 +645,7 @@ class Cluster(Mapping):  # type: ignore
         Returns:
             str: The JSON representation of the Cluster object.
         """
-        return json.dumps(self, cls=EncodeClusters)
+        return json.dumps(self, cls=EncodeClusters, sort_keys=True)
 
     def to_dict(self) -> Dict[str, Any]:
         """
