@@ -8,7 +8,7 @@ import sys
 from collections.abc import Mapping
 from glob import glob
 import re
-from typing import List, Dict, Optional, Any, Tuple, Iterator, overload, Union
+from typing import List, Dict, Optional, Any, Tuple, Iterator, overload, Union, Set
 
 if sys.version_info >= (3, 8):
     from typing import Literal
@@ -56,10 +56,11 @@ class Galaxy():
         name (str): The name of the galaxy.
         icon (str): The icon of the galaxy.
         description (str): The description of the galaxy.
-        version (str): The version of the galaxy.
+        version (int): The version of the galaxy.
         uuid (str): The UUID of the galaxy.
         namespace (str, optional): The namespace of the galaxy.
-        kill_chain_order (str, optional): The kill chain order of the galaxy.
+        kill_chain_order (Dict, optional): The kill chain order of the galaxy.
+        __init_hash (int): The hash of the json representation of the galaxy at __init__().
     """
 
     def __init__(self, galaxy: Union[str, Dict[str, str]]):
@@ -81,23 +82,36 @@ class Galaxy():
         self.name = self.galaxy['name']
         self.icon = self.galaxy['icon']
         self.description = self.galaxy['description']
-        self.version = self.galaxy['version']
+        self.version: int = self.galaxy['version']
         self.uuid = self.galaxy['uuid']
         self.namespace = self.galaxy.pop('namespace', None)
         self.kill_chain_order = self.galaxy.pop('kill_chain_order', None)
+        self.__init_hash: int = hash(self.to_json())
 
-    def save(self, file_name: str) -> None:
+    def save(self, file_name: str, update_version: bool = True) -> None:
         """
         Saves the galaxy to a file <file_name>.json
 
         Args:
             file_name (str): The name of the file to save the galaxy to.
+            update_version (bool, optional): Flag indicating whether to update the version if the galaxy changed. Defaults to True.
         """
+        if update_version and self.has_changed():
+            self.version += 1
         root_dir_galaxies = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)), 'data', 'misp-galaxy', 'galaxies')  # type: ignore [type-var, arg-type]
         galaxy_file = os.path.join(root_dir_galaxies, f"{file_name}.json")
         with open(galaxy_file, 'w') as f:
             json.dump(self, f, cls=EncodeGalaxies, indent=2, sort_keys=True, ensure_ascii=False)
             f.write('\n')  # needed for the beauty and to be compliant with jq_all_the_things
+
+    def has_changed(self) -> bool:
+        """
+        Checks if the galaxy has changed since initialization.
+
+        Returns:
+            bool: True if the galaxy has changed, False otherwise.
+        """
+        return hash(self.to_json()) != self.__init_hash
 
     def to_json(self) -> str:
         """
@@ -312,7 +326,7 @@ class ClusterValue():
         self.value = v['value']
         self.description = v.get('description')
         self.meta = self.__init_meta(v.get('meta'))
-        self.related = []
+        self.related: List[Dict[str, str]] = []
         try:
             # LATER convert related to a class?
             self.related = v['related']
@@ -392,21 +406,21 @@ class Cluster(Mapping):  # type: ignore
     Represents a cluster in the PyMISPGalaxies library.
 
     Attributes:
-        cluster (Dict[str, Any]): The dictionary containing the cluster data.
-        cluster (str): The name of the existing cluster to load from the data folder.
+        cluster (Union[Dict[str, Any], str]): The dictionary containing the cluster data or the name of the existing cluster to load from the data folder.
         name (str): The name of the cluster.
         type (str): The type of the cluster.
         source (str): The source of the cluster.
-        authors (str): The authors of the cluster.
+        authors (List[str]): The authors of the cluster.
         description (str): The description of the cluster.
         uuid (str): The UUID of the cluster.
-        version (str): The version of the cluster.
+        version (int): The version of the cluster.
         category (str): The category of the cluster.
         cluster_values (Dict[str, ClusterValue]): A dictionary containing the cluster values, where the keys are the values of the cluster and the values are instances of the ClusterValue class.
         duplicates (List[Tuple[str, str]]): A list of tuples representing duplicate values in the cluster, where each tuple contains the name of the cluster and the duplicate value.
+        __init_hash (int): The hash of the json representation of the cluster at __init__().
 
     Methods:
-        __init__(self, cluster: Dict[str, Any] | str, skip_duplicates: bool = False): Initializes a Cluster object from a dict or existing cluster file
+        __init__(self, cluster: Union[Dict[str, Any], str], skip_duplicates: bool = False): Initializes a Cluster object from a dict or existing cluster file
         search(self, query: str, return_tags: bool = False) -> Union[List[ClusterValue], List[str]]: Searches for values in the cluster that match the given query.
         machinetags(self) -> List[str]: Returns a list of machine tags for the cluster.
         get_by_external_id(self, external_id: str) -> ClusterValue: Returns the cluster value with the specified external ID.
@@ -435,14 +449,14 @@ class Cluster(Mapping):  # type: ignore
                 self.cluster = json.load(f)
         else:
             self.cluster = cluster
-        self.name = self.cluster['name']
-        self.type = self.cluster['type']
-        self.source = self.cluster['source']
-        self.authors = self.cluster['authors']
-        self.description = self.cluster['description']
-        self.uuid = self.cluster['uuid']
-        self.version = self.cluster['version']
-        self.category = self.cluster['category']
+        self.name: str = self.cluster['name']
+        self.type: str = self.cluster['type']
+        self.source: str = self.cluster['source']
+        self.authors: Set[str] = set(self.cluster['authors'])
+        self.description: str = self.cluster['description']
+        self.uuid: str = self.cluster['uuid']
+        self.version: int = self.cluster['version']
+        self.category: str = self.cluster['category']
         self.cluster_values: Dict[str, Any] = {}
         self.duplicates: List[Tuple[str, str]] = []
         try:
@@ -451,6 +465,7 @@ class Cluster(Mapping):  # type: ignore
                 self.append(new_cluster_value, skip_duplicates)
         except KeyError:
             pass
+        self.__init_hash: int = hash(self.to_json())
 
     @overload
     def search(self, query: str, return_tags: Literal[False] = False) -> List[ClusterValue]:
@@ -559,18 +574,30 @@ class Cluster(Mapping):  # type: ignore
                 raise PyMISPGalaxiesError("Duplicate value ({}) in cluster: {}".format(cv.value, self.name))
         self.cluster_values[cv.value.lower()] = cv
 
-    def save(self, name: str) -> None:
+    def save(self, name: str, update_version: bool = True) -> None:
         """
         Saves the cluster to a file <name>.json
 
         Args:
             name (str): The name of the file to save the cluster to.
+            update_version (bool, optional): Flag indicating whether to update the version if the cluster changed. Defaults to True.
         """
+        if update_version and self.has_changed():
+            self.version += 1
         root_dir_clusters = os.path.join(os.path.abspath(os.path.dirname(sys.modules['pymispgalaxies'].__file__)), 'data', 'misp-galaxy', 'clusters')  # type: ignore [type-var, arg-type]
         cluster_file = os.path.join(root_dir_clusters, f"{name}.json")
         with open(cluster_file, 'w') as f:
             json.dump(self, f, cls=EncodeClusters, indent=2, sort_keys=True, ensure_ascii=False)
             f.write('\n')  # needed for the beauty and to be compliant with jq_all_the_things
+
+    def has_changed(self) -> bool:
+        """
+        Checks if the cluster has changed since initialization.
+
+        Returns:
+            bool: True if the cluster has changed, False otherwise.
+        """
+        return hash(self.to_json()) != self.__init_hash
 
     def __str__(self) -> str:
         """
@@ -628,7 +655,7 @@ class Cluster(Mapping):  # type: ignore
             Dict[str, Any]: The dictionary representation of the Cluster object.
         """
         to_return = {'name': self.name, 'type': self.type, 'source': self.source,
-                     'authors': self.authors, 'description': self.description,
+                     'authors': sorted(list(self.authors)), 'description': self.description,
                      'uuid': self.uuid, 'version': self.version, 'category': self.category,
                      'values': []}
         to_return['values'] = [v for v in self.values()]

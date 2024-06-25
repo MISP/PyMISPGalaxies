@@ -67,3 +67,18 @@ class TestPyMISPGalaxiesApi(unittest.TestCase):
                 self.assertEqual(rel['type'], 'similar-to')
             else:
                 self.fail(f"Unexpected related: {rel}")
+
+    def test_cluster_has_changed(self):
+        cluster = Cluster(cluster='backdoor')
+        cv = cluster.get('WellMess')
+        self.assertFalse(cluster.has_changed())
+
+        cv.description = 'new description'
+        self.assertTrue(cluster.has_changed())
+
+    def test_galaxy_has_changed(self):
+        galaxy = self.galaxies.get('backdoor')
+        self.assertFalse(galaxy.has_changed())
+
+        galaxy.description = 'new description'
+        self.assertTrue(galaxy.has_changed())
