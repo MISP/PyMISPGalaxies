@@ -33,7 +33,7 @@ python = "^3.8.1"
 jsonschema = "^4.22.0"
 
 [tool.poetry.dev-dependencies]
-mypy = "^1.10.1"
+mypy = "^1.11.0"
 coverage = "^7.5.4"
 pytest-cov = "^5.0.0"
 
