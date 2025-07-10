@@ -94,7 +94,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
                 if cv.meta:
                     self.assertIsNot(cv.meta.additional_properties, {})
                     for key, value in cv.meta.to_dict().items():
-                        self.assertTrue(isinstance(value, (str, list)), value)
+                        self.assertTrue(isinstance(value, (str, list)), f'Error in {c.name} - {cv.value}: {key} is not a string or list: {json.dumps(value, indent=2)}')
                         if isinstance(value, list):
                             for v in value:
                                 self.assertTrue(isinstance(v, str), f'Error in {c.name}: {json.dumps(value, indent=2)}')
