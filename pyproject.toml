@@ -1,42 +1,52 @@
-[tool.poetry]
+[project]
 name = "pymispgalaxies"
-version = "1.0.0"
+version = "1.1.0"
 description = "Python API for the MISP Galaxies."
-authors = ["Raphaël Vinot <raphael.vinot@circl.lu>"]
+authors = [
+    {name="Raphaël Vinot", email="raphael.vinot@circl.lu"}
+]
 license = "BSD-3-Clause"
-repository = "https://github.com/MISP/PyMISPGalaxies"
-
 readme = "README.md"
+requires-python = ">=3.10"
 
+dynamic = [ "classifiers" ]
+
+dependencies = [
+    "jsonschema (>4.24.0)"
+]
+
+
+[project.urls]
+repository = "https://github.com/MISP/PyMISPGalaxies"
+issues = "https://github.com/MISP/PyMISPGalaxies/issues"
+
+[tool.poetry]
 classifiers=[
-    'License :: OSI Approved :: BSD License',
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Intended Audience :: Science/Research',
     'Intended Audience :: Telecommunications Industry',
-    'Programming Language :: Python',
     'Topic :: Security',
     'Topic :: Internet',
 ]
 
-include = ["pymispgalaxies/data/misp-galaxy/schema_*.json",
-           "pymispgalaxies/data/misp-galaxy/clusters/*.json",
-		   "pymispgalaxies/data/misp-galaxy/galaxies/*.json",
-		   "pymispgalaxies/data/misp-galaxy/misp/*.json",
-		   "pymispgalaxies/data/misp-galaxy/vocabularies/common/*.json",
-		   "pymispgalaxies/data/misp-galaxy/vocabularies/threat-actor/*.json"]
-
 exclude = ["pymispgalaxies/data/misp-galaxy/tools/**/*"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-jsonschema = "^4.24.0"
+include = [
+    {path = "pymispgalaxies/data/misp-galaxy/schema_*.json", format = ["sdist", "wheel"]},
+    {path = "pymispgalaxies/data/misp-galaxy/clusters/*.json", format = ["sdist", "wheel"]},
+	{path = "pymispgalaxies/data/misp-galaxy/galaxies/*.json", format = ["sdist", "wheel"]},
+	{path = "pymispgalaxies/data/misp-galaxy/misp/*.json", format = ["sdist", "wheel"]},
+	{path = "pymispgalaxies/data/misp-galaxy/vocabularies/common/*.json", format = ["sdist", "wheel"]},
+	{path = "pymispgalaxies/data/misp-galaxy/vocabularies/threat-actor/*.json", format = ["sdist", "wheel"]}
+]
 
-[tool.poetry.dev-dependencies]
-mypy = "^1.16.1"
-coverage = "^7.9.2"
-pytest-cov = "^6.2.1"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.18.2"
+coverage = "^7.12.0"
+pytest-cov = "^7.0.0"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
