@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          submodules: 'recursive'
       - name: Install Poetry
         run: python -m pip install --upgrade pip poetry
       - name: Build artifacts
