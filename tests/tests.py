@@ -2,20 +2,22 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag
+from pymispgalaxies import Galaxies, Clusters, UnableToRevertMachinetag, Galaxy, Cluster
 from glob import glob
 import os
 import json
 from collections import Counter, defaultdict
 import warnings
 from uuid import UUID
+import filecmp
+import tempfile
 
 
 class TestPyMISPGalaxies(unittest.TestCase):
 
     def setUp(self):
         self.galaxies = Galaxies()
-        self.clusters = Clusters(skip_duplicates=False)
+        self.clusters = Clusters(skip_duplicates=True)
         self.maxDiff = None
 
     def test_searchable(self):
@@ -36,17 +38,27 @@ class TestPyMISPGalaxies(unittest.TestCase):
                 to_print = Counter(c.duplicates)
                 for entry, counter in to_print.items():
                     print(counter + 1, entry)
-        self.assertFalse(has_duplicates)
+        self.assertFalse(has_duplicates, msg="Duplicates found")
 
     def test_dump_galaxies(self):
         galaxies_from_files = {}
         for galaxy_file in glob(os.path.join(self.galaxies.root_dir_galaxies, '*.json')):
             with open(galaxy_file, 'r') as f:
                 galaxy = json.load(f)
-            galaxies_from_files[galaxy['name']] = galaxy
-        for name, g in self.galaxies.items():
+            galaxies_from_files[galaxy['type']] = galaxy
+        for _, g in self.galaxies.items():
             out = g.to_dict()
-            self.assertDictEqual(out, galaxies_from_files[g.name])
+            self.assertDictEqual(out, galaxies_from_files[g.type])
+
+    @unittest.skip("We don't want to enforce it.")
+    def test_save_galaxies(self):
+        for galaxy_file in glob(os.path.join(self.galaxies.root_dir_galaxies, '*.json')):
+            with open(galaxy_file, 'r') as f:
+                galaxy = Galaxy(json.load(f))
+            with tempfile.NamedTemporaryFile(suffix='.json') as temp_file:
+                temp_file_no_suffix = temp_file.name[:-5]
+                galaxy.save(temp_file_no_suffix)
+                self.assertTrue(filecmp.cmp(galaxy_file, temp_file.name), msg=f"{galaxy_file} different when saving using Galaxy.save(). Maybe an sorting issue?")
 
     def test_dump_clusters(self):
         clusters_from_files = {}
@@ -58,6 +70,16 @@ class TestPyMISPGalaxies(unittest.TestCase):
             out = c.to_dict()
             print(name, c.name)
             self.assertCountEqual(out, clusters_from_files[c.name])
+
+    @unittest.skip("We don't want to enforce it.")
+    def test_save_clusters(self):
+        for cluster_file in glob(os.path.join(self.clusters.root_dir_clusters, '*.json')):
+            with open(cluster_file, 'r') as f:
+                cluster = Cluster(json.load(f))
+            with tempfile.NamedTemporaryFile(suffix='.json') as temp_file:
+                temp_file_no_suffix = temp_file.name[:-5]
+                cluster.save(temp_file_no_suffix)
+                self.assertTrue(filecmp.cmp(cluster_file, temp_file.name), msg=f"{cluster_file} different when saving using Cluster.save(). Maybe a sorting issue?")
 
     def test_validate_schema_clusters(self):
         self.clusters.validate_with_schema()
@@ -72,7 +94,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
                 if cv.meta:
                     self.assertIsNot(cv.meta.additional_properties, {})
                     for key, value in cv.meta.to_dict().items():
-                        self.assertTrue(isinstance(value, (str, list)), value)
+                        self.assertTrue(isinstance(value, (str, list)), f'Error in {c.name} - {cv.value}: {key} is not a string or list: {json.dumps(value, indent=2)}')
                         if isinstance(value, list):
                             for v in value:
                                 self.assertTrue(isinstance(v, str), f'Error in {c.name}: {json.dumps(value, indent=2)}')
@@ -107,7 +129,7 @@ class TestPyMISPGalaxies(unittest.TestCase):
         all_uuids = defaultdict(list)
         for cluster in self.clusters.values():
             # Skip deprecated
-            if self.galaxies[cluster.name].namespace == 'deprecated':
+            if self.galaxies[cluster.type].namespace == 'deprecated':
                 continue
             try:
                 self.assertIsInstance(UUID(cluster.uuid), UUID, f'{cluster.name} - {cluster.uuid}')
