@@ -44,7 +44,7 @@ include = [
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.19.1"
-coverage = "^7.13.1"
+coverage = "^7.13.2"
 pytest-cov = "^7.0.0"
 
 [build-system]
