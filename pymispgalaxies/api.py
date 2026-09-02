@@ -718,7 +718,7 @@ class Clusters(Mapping):  # type: ignore
         Returns:
             List[str]: A list of machinetags.
         """
-        return [cluster.machinetags() for cluster in self.values()]
+        return [machinetag for cluster in self.values() for machinetag in cluster.machinetags()]
 
     def revert_machinetag(self, machinetag: str) -> Tuple[Cluster, ClusterValue]:
         """
