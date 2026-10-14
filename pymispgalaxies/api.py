@@ -65,6 +65,8 @@ class Galaxy():
         uuid (str): The UUID of the galaxy.
         namespace (str, optional): The namespace of the galaxy.
         kill_chain_order (Dict, optional): The kill chain order of the galaxy.
+        category (str, optional): What concept the clusters of the galaxy represent.
+        sub_category (str, optional): The finer distinction inside the category.
         _init_hash (int): The hash of the json representation of the galaxy at __init__().
     """
 
@@ -91,6 +93,8 @@ class Galaxy():
         self.uuid = self.galaxy['uuid']
         self.namespace = self.galaxy.pop('namespace', None)
         self.kill_chain_order = self.galaxy.pop('kill_chain_order', None)
+        self.category = self.galaxy.pop('category', None)
+        self.sub_category = self.galaxy.pop('sub_category', None)
         self._init_hash: int = hash(self.to_json())
 
     def save(self, file_name: str, update_version: bool = True) -> None:
@@ -140,6 +144,10 @@ class Galaxy():
             to_return['namespace'] = self.namespace
         if self.kill_chain_order:
             to_return['kill_chain_order'] = self.kill_chain_order
+        if self.category:
+            to_return['category'] = self.category
+        if self.sub_category:
+            to_return['sub_category'] = self.sub_category
         return to_return
 
 
