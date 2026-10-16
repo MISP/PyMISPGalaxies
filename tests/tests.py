@@ -100,7 +100,11 @@ class TestPyMISPGalaxies(unittest.TestCase):
                                 self.assertTrue(isinstance(v, str), f'Error in {c.name}: {json.dumps(value, indent=2)}')
 
     def test_machinetags(self):
-        self.clusters.all_machinetags()
+        machinetags = self.clusters.all_machinetags()
+        for machinetag in machinetags:
+            self.assertTrue(isinstance(machinetag, str), f'Not a machine tag: {machinetag}')
+        self.assertEqual(len(machinetags),
+                         sum(len(cluster.machinetags()) for cluster in self.clusters.values()))
 
     def test_print(self):
         print(self.clusters)
